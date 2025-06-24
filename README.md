@@ -54,6 +54,23 @@ Then execute the test suite with:
 pytest
 ```
 
+## Simple ReAct Agent
+
+The project includes a minimal implementation of the ReAct agent pattern. To run
+the agent programmatically:
+
+```python
+from src.agent import ReActAgent
+from src.tools import get_web_scraper
+
+def call_llm(prompt: str) -> str:
+    # integrate with your favourite LLM here
+    ...
+
+agent = ReActAgent(call_llm, [get_web_scraper()])
+result = agent.run("東京の天気を教えて")
+```
+
 
 ## License
 

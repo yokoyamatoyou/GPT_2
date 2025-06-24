@@ -5,4 +5,7 @@ PyPDF2
 Pillow
 openpyxl
 python-dotenv
+requests
+beautifulsoup4
+pydantic
 
