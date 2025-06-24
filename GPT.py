@@ -4,7 +4,6 @@ import datetime
 import threading
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
-import openai
 from openai import OpenAI
 import docx
 import PyPDF2
