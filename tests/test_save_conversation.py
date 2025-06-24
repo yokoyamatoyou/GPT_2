@@ -2,7 +2,7 @@ import json
 import os
 from types import SimpleNamespace
 
-import GPT
+from src.ui import main as GPT
 
 ChatGPTClient = GPT.ChatGPTClient
 

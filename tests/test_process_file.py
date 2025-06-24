@@ -4,7 +4,7 @@ from PyPDF2 import PdfWriter
 from PIL import Image
 import openpyxl
 
-import GPT
+from src.ui import main as GPT
 
 ChatGPTClient = GPT.ChatGPTClient
 

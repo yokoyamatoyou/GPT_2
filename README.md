@@ -1,6 +1,6 @@
 # GPT_2
 
-This repository contains a simple desktop interface for ChatGPT built with [CustomTkinter](https://github.com/TomSchimansky/CustomTkinter). The `GPT.py` script provides a GUI for interacting with OpenAI models and supports uploading files such as Word documents, PDFs, images and Excel spreadsheets.
+This repository contains a simple desktop interface for ChatGPT built with [CustomTkinter](https://github.com/TomSchimansky/CustomTkinter). The `src/ui/main.py` script provides a GUI for interacting with OpenAI models and supports uploading files such as Word documents, PDFs, images and Excel spreadsheets.
 
 ## Getting Started
 
@@ -35,7 +35,7 @@ echo "OPENAI_API_KEY=your_key_here" >> .env
 Run the GUI with Python:
 
 ```bash
-python GPT.py
+python -m src.ui.main
 ```
 
 The window should open allowing you to chat with the model and upload supported files.
