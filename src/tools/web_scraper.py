@@ -1,7 +1,25 @@
-from typing import Optional
+from typing import Optional, Dict, Tuple
 import requests
 from bs4 import BeautifulSoup
+from urllib.parse import urlparse, urljoin
+from urllib.robotparser import RobotFileParser
+import time
+
 from pydantic import BaseModel, Field
+
+_CACHE: Dict[str, Tuple[float, str]] = {}
+_CACHE_TTL = 3600  # seconds
+_ROBOTS: Dict[str, RobotFileParser] = {}
+_LAST_REQUEST_TIME = 0.0
+_DELAY = 1.0  # seconds between requests
+
+
+def _respect_delay() -> None:
+    global _LAST_REQUEST_TIME
+    since = time.time() - _LAST_REQUEST_TIME
+    if since < _DELAY:
+        time.sleep(_DELAY - since)
+    _LAST_REQUEST_TIME = time.time()
 
 from .base import Tool
 
@@ -14,8 +32,35 @@ class ScraperInput(BaseModel):
 
 
 def scrape_website_content(url: str, max_chars: int = 1000) -> str:
-    """Fetch a web page and return cleaned text."""
+    """Fetch a web page and return cleaned text respecting robots.txt."""
+    parsed = urlparse(url)
+    base = f"{parsed.scheme}://{parsed.netloc}"
+
+    # Check robots.txt
+    rp = _ROBOTS.get(base)
+    if rp is None:
+        rp = RobotFileParser()
+        robots_url = urljoin(base, "/robots.txt")
+        try:
+            _respect_delay()
+            resp = requests.get(robots_url, headers={"User-Agent": "Mozilla/5.0"}, timeout=5)
+            if resp.status_code == 200:
+                rp.parse(resp.text.splitlines())
+            else:
+                rp = None
+        except Exception:
+            rp = None
+        _ROBOTS[base] = rp
+    if rp and not rp.can_fetch("*", parsed.path):
+        return "Disallowed by robots.txt"
+
+    # Check cache
+    cached = _CACHE.get(url)
+    if cached and time.time() - cached[0] < _CACHE_TTL:
+        return cached[1][:max_chars]
+
     try:
+        _respect_delay()
         response = requests.get(
             url, headers={"User-Agent": "Mozilla/5.0"}, timeout=10
         )
@@ -33,7 +78,9 @@ def scrape_website_content(url: str, max_chars: int = 1000) -> str:
         tag.decompose()
 
     text = main.get_text(separator=" ", strip=True)
-    return text[:max_chars]
+    result = text[:max_chars]
+    _CACHE[url] = (time.time(), result)
+    return result
 
 
 def get_tool() -> Tool:
