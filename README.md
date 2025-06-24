@@ -39,3 +39,12 @@ python GPT.py
 ```
 
 The window should open allowing you to chat with the model and upload supported files.
+
+## Running Tests
+
+Execute the test suite with:
+
+```bash
+pytest
+```
+
