@@ -76,7 +76,13 @@ You can also try the agent from the command line using the built in runner:
 ```bash
 python -m src.main
 ```
+## Verbose Logging
 
+Set `verbose=True` when creating `ReActAgent` to enable debug output using Python's `logging` module.
+
+```python
+agent = ReActAgent(call_llm, [get_web_scraper()], verbose=True)
+```
 
 ## License
 

@@ -1,10 +1,14 @@
 import re
+import logging
 from typing import Callable, Dict, List, Optional
 
 from pydantic import BaseModel
 
 from src.tools.base import Tool, execute_tool
 from src.memory import ConversationMemory
+
+
+logger = logging.getLogger(__name__)
 
 
 class ReActAgent:
@@ -25,10 +29,14 @@ class ReActAgent:
         llm: Callable[[str], str],
         tools: List[Tool],
         memory: Optional[ConversationMemory] = None,
+        verbose: bool = False,
     ):
         self.llm = llm
         self.tools = {t.name: t for t in tools}
         self.memory = memory
+        self.verbose = verbose
+        if verbose:
+            logger.setLevel(logging.DEBUG)
 
     def tool_descriptions(self) -> str:
         descs = []
@@ -51,20 +59,33 @@ class ReActAgent:
                 tools=self.tool_descriptions(),
                 agent_scratchpad=(history + "\n" + scratchpad if history else scratchpad),
             )
+            if self.verbose:
+                logger.debug("Prompt:\n%s", prompt)
+
             output = self.llm(prompt)
+            if self.verbose:
+                logger.debug("LLM output:\n%s", output)
             final_match = self.FINAL_RE.search(output)
             if final_match:
                 answer = final_match.group(1)
                 if self.memory is not None:
                     self.memory.add("assistant", answer)
+                if self.verbose:
+                    logger.info("Final answer: %s", answer)
                 return answer
             action_match = self.ACTION_RE.search(output)
             if not action_match:
                 return "エラー: 行動を特定できませんでした"
             tool_name, tool_input = action_match.groups()
+            if self.verbose:
+                logger.info("Executing tool %s with %s", tool_name, tool_input)
             observation = execute_tool(tool_name, {"url": tool_input}, self.tools)
+            if self.verbose:
+                logger.debug("Observation: %s", observation)
             scratchpad += f"{output}\n観察: {observation}\n"
             if self.memory is not None:
                 self.memory.add("assistant", output)
                 self.memory.add("system", f"観察: {observation}")
+        if self.verbose:
+            logger.warning("Max turns reached with no final answer")
         return "エラー: 最大試行回数に達しました"
