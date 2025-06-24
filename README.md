@@ -21,12 +21,13 @@ Install all required Python packages using `requirements.txt`:
 pip install -r requirements.txt
 ```
 
-### 3. Set your OpenAI API key
+### 3. Configure environment variables
 
-The script expects the environment variable `OPENAI_API_KEY` to be set with your OpenAI API key:
+Copy `.env.example` to `.env` and add your OpenAI API key:
 
 ```bash
-export OPENAI_API_KEY=your_key_here  # On Windows use: set OPENAI_API_KEY=your_key_here
+cp .env.example .env
+echo "OPENAI_API_KEY=your_key_here" >> .env
 ```
 
 ### 4. Launch the application

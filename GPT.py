@@ -2,6 +2,8 @@ import os
 import json
 import datetime
 import threading
+import logging
+
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
 from openai import OpenAI
@@ -12,6 +14,15 @@ import openpyxl
 import base64
 import io
 from typing import Optional, List, Dict
+from dotenv import load_dotenv
+
+# Load environment variables from .env if present
+load_dotenv()
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+)
 
 # CustomTkinterの設定
 ctk.set_appearance_mode("light")
@@ -27,8 +38,11 @@ class ChatGPTClient:
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
             messagebox.showerror("エラー", "環境変数 OPENAI_API_KEY が設定されていません")
+            logging.error("OPENAI_API_KEY is not set")
             self.window.destroy()
             return
+
+        logging.info("Loaded OpenAI API key from environment")
         
         self.client = OpenAI(api_key=api_key)
         
