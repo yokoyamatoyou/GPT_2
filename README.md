@@ -71,6 +71,12 @@ agent = ReActAgent(call_llm, [get_web_scraper()])
 result = agent.run("東京の天気を教えて")
 ```
 
+You can also try the agent from the command line using the built in runner:
+
+```bash
+python -m src.main
+```
+
 
 ## License
 
