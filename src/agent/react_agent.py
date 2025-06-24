@@ -1,6 +1,6 @@
 import re
 import logging
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional, Iterator
 
 from pydantic import BaseModel
 
@@ -44,7 +44,8 @@ class ReActAgent:
             descs.append(f"- {t.name}: {t.description}")
         return "\n".join(descs)
 
-    def run(self, question: str, max_turns: int = 5) -> str:
+    def run_iter(self, question: str, max_turns: int = 5) -> Iterator[str]:
+        """Yield intermediate steps of the ReAct loop."""
         scratchpad = ""
         if self.memory is not None:
             self.memory.add("user", question)
@@ -53,6 +54,7 @@ class ReActAgent:
             )
         else:
             history = ""
+
         for _ in range(max_turns):
             prompt = self.PROMPT_TEMPLATE.format(
                 input=question,
@@ -61,10 +63,10 @@ class ReActAgent:
             )
             if self.verbose:
                 logger.debug("Prompt:\n%s", prompt)
-
             output = self.llm(prompt)
             if self.verbose:
                 logger.debug("LLM output:\n%s", output)
+            yield output
             final_match = self.FINAL_RE.search(output)
             if final_match:
                 answer = final_match.group(1)
@@ -72,20 +74,32 @@ class ReActAgent:
                     self.memory.add("assistant", answer)
                 if self.verbose:
                     logger.info("Final answer: %s", answer)
-                return answer
+                yield answer
+                return
             action_match = self.ACTION_RE.search(output)
             if not action_match:
-                return "エラー: 行動を特定できませんでした"
+                yield "エラー: 行動を特定できませんでした"
+                return
             tool_name, tool_input = action_match.groups()
             if self.verbose:
                 logger.info("Executing tool %s with %s", tool_name, tool_input)
             observation = execute_tool(tool_name, {"url": tool_input}, self.tools)
             if self.verbose:
                 logger.debug("Observation: %s", observation)
+            yield f"観察: {observation}"
             scratchpad += f"{output}\n観察: {observation}\n"
             if self.memory is not None:
                 self.memory.add("assistant", output)
                 self.memory.add("system", f"観察: {observation}")
         if self.verbose:
             logger.warning("Max turns reached with no final answer")
-        return "エラー: 最大試行回数に達しました"
+        yield "エラー: 最大試行回数に達しました"
+
+    def run(self, question: str, max_turns: int = 5) -> str:
+        answer = None
+        last = ""
+        for message in self.run_iter(question, max_turns=max_turns):
+            last = message
+            if message.startswith("最終的な答え:"):
+                answer = message[len("最終的な答え:"):].strip()
+        return answer or last
