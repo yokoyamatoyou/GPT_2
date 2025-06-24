@@ -3,6 +3,7 @@ import json
 import datetime
 import threading
 import logging
+import queue
 
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
@@ -50,9 +51,12 @@ class ChatGPTClient:
         self.messages = []
         self.current_title = None
         self.uploaded_files = []
+        self.response_queue = queue.Queue()
         
         # UI要素の作成
         self.setup_ui()
+        # キュー監視処理を開始
+        self.window.after(100, self.process_queue)
         
     def setup_ui(self):
         # メインコンテナ
@@ -286,14 +290,12 @@ class ChatGPTClient:
         if len(self.messages) == 1:
             self.generate_title(user_message)
         
-        # 別スレッドで応答を取得
+        # 別スレッドで応答を取得しキューに書き込む
         threading.Thread(target=self.get_response, daemon=True).start()
     
     def get_response(self):
         try:
-            self.chat_display.configure(state="normal")
-            self.chat_display.insert("end", "🤖 Assistant: ")
-            
+            self.response_queue.put("🤖 Assistant: ")
             response_text = ""
             # gpt-4oなどマルチモーダルモデルを正しく使う場合、入力メッセージの形式に注意
             # self.messages は `[{"role": "user", "content": [{"type": "text", ...}, {"type": "image_url", ...}]}]` の形式
@@ -312,24 +314,16 @@ class ChatGPTClient:
                 if chunk.choices[0].delta.content is not None:
                     content = chunk.choices[0].delta.content
                     response_text += content
-                    self.chat_display.insert("end", content)
-                    self.chat_display.see("end")
-                    self.window.update_idletasks() # update()から変更
+                    self.response_queue.put(content)
             
-            self.chat_display.insert("end", "\n")
-            self.chat_display.configure(state="disabled")
+            self.response_queue.put("\n")
             
             # アシスタントの応答を履歴に追加
             self.messages.append({"role": "assistant", "content": response_text})
-            
-            # 会話を保存
-            self.save_conversation()
+            self.response_queue.put("__SAVE__")
             
         except Exception as e:
-            self.chat_display.configure(state="normal")
-            self.chat_display.insert("end", f"\n\nエラー: {str(e)}\n")
-            self.chat_display.see("end")
-            self.chat_display.configure(state="disabled")
+            self.response_queue.put(f"\n\nエラー: {str(e)}\n")
     
     def generate_title(self, first_message: str):
         """最初のメッセージからタイトルを生成"""
@@ -405,6 +399,22 @@ class ChatGPTClient:
         self.file_list_text.configure(state="disabled")
         
         self.window.title("ChatGPT Desktop")
+
+    def process_queue(self):
+        """キューからのメッセージをGUIに反映"""
+        try:
+            while True:
+                item = self.response_queue.get_nowait()
+                if item == "__SAVE__":
+                    self.save_conversation()
+                    continue
+                self.chat_display.configure(state="normal")
+                self.chat_display.insert("end", item)
+                self.chat_display.see("end")
+                self.chat_display.configure(state="disabled")
+        except queue.Empty:
+            pass
+        self.window.after(100, self.process_queue)
     
     def run(self):
         # 初期化時にチャット表示とファイルリストをdisabledに
