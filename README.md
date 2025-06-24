@@ -42,7 +42,13 @@ The window should open allowing you to chat with the model and upload supported 
 
 ## Running Tests
 
-Execute the test suite with:
+Install the development requirements:
+
+```bash
+pip install -r requirements-dev.txt
+```
+
+Then execute the test suite with:
 
 ```bash
 pytest
