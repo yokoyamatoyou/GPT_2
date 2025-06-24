@@ -22,4 +22,4 @@ def execute_tool(name: str, args: dict, tools: dict):
         parsed = tool.args_schema(**args)
     except Exception as e:
         return f"Invalid arguments for {name}: {e}"
-    return tool.func(**parsed.dict())
+    return tool.func(**parsed.model_dump())
