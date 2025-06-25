@@ -11,6 +11,20 @@ def test_parse_args_memory_file():
     args = src_main.parse_args(['--memory-file', 'mem.json'])
     assert args.memory_file == 'mem.json'
 
+def test_parse_args_tot_options():
+    args = src_main.parse_args(['--agent', 'tot', '--depth', '5', '--breadth', '6'])
+    assert args.agent == 'tot'
+    assert args.depth == 5
+    assert args.breadth == 6
+
+
+def test_parse_args_tot_option_validation():
+    import pytest
+    with pytest.raises(SystemExit):
+        src_main.parse_args(['--agent', 'tot', '--depth', '0'])
+    with pytest.raises(SystemExit):
+        src_main.parse_args(['--agent', 'tot', '--breadth', '-1'])
+
 
 def test_main_uses_vector_memory(monkeypatch):
     created = {}
@@ -75,8 +89,10 @@ def test_main_uses_tot_agent(monkeypatch):
     created = {}
 
     class DummyTot:
-        def __init__(self, llm, evaluate):
+        def __init__(self, llm, evaluate, *, max_depth, breadth):
             created['called'] = True
+            created['depth'] = max_depth
+            created['breadth'] = breadth
         def run(self, q):
             return 'ok'
 
@@ -87,7 +103,9 @@ def test_main_uses_tot_agent(monkeypatch):
     monkeypatch.setattr('builtins.input', lambda prompt='': '')
     monkeypatch.setattr('builtins.print', lambda *a, **k: None)
 
-    src_main.main(['--agent', 'tot'])
+    src_main.main(['--agent', 'tot', '--depth', '3', '--breadth', '4'])
 
     assert created.get('called', False)
+    assert created['depth'] == 3
+    assert created['breadth'] == 4
 

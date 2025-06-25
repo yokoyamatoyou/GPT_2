@@ -93,6 +93,13 @@ To run the experimental Tree-of-Thoughts agent instead of ReAct:
 ```bash
 python -m src.main --agent tot
 ```
+
+You can adjust the search parameters for the ToT agent using `--depth` and
+`--breadth`:
+
+```bash
+python -m src.main --agent tot --depth 3 --breadth 4
+```
 You can persist the conversation across runs by specifying `--memory-file` with a
 path to a JSON file. The memory will be loaded at startup and saved when the
 program exits:

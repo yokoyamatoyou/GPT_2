@@ -72,6 +72,12 @@ def create_evaluator(llm: callable) -> callable:
 def parse_args(args: list[str] | None = None) -> argparse.Namespace:
     """Parse command line options."""
     parser = argparse.ArgumentParser(description="Run the simple agent")
+
+    def positive_int(value: str) -> int:
+        ivalue = int(value)
+        if ivalue < 1:
+            raise argparse.ArgumentTypeError("must be a positive integer")
+        return ivalue
     parser.add_argument(
         "--memory",
         choices=["conversation", "vector"],
@@ -87,6 +93,18 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
         choices=["react", "tot"],
         default="react",
         help="Which agent implementation to use (tot is experimental)",
+    )
+    parser.add_argument(
+        "--depth",
+        type=positive_int,
+        default=2,
+        help="Max search depth for the ToT agent",
+    )
+    parser.add_argument(
+        "--breadth",
+        type=positive_int,
+        default=2,
+        help="Number of branches to keep at each depth for the ToT agent",
     )
     return parser.parse_args(args)
 
@@ -110,7 +128,12 @@ def main(argv: list[str] | None = None) -> None:
         agent = ReActAgent(llm, tools, memory)
     else:
         evaluator = create_evaluator(llm)
-        agent = ToTAgent(llm, evaluator)
+        agent = ToTAgent(
+            llm,
+            evaluator,
+            max_depth=args.depth,
+            breadth=args.breadth,
+        )
 
     print("Enter an empty line to quit.")
     while True:
