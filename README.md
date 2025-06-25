@@ -83,6 +83,11 @@ to enable the `VectorMemory` store instead of the default conversation memory:
 ```bash
 python -m src.main --memory vector
 ```
+To run the experimental Tree-of-Thoughts agent instead of ReAct:
+
+```bash
+python -m src.main --agent tot
+```
 You can persist the conversation across runs by specifying `--memory-file` with a
 path to a JSON file. The memory will be loaded at startup and saved when the
 program exits:

@@ -70,3 +70,24 @@ def test_main_loads_and_saves_memory(tmp_path, monkeypatch):
     assert loaded['val']
     assert saved['val']
 
+
+def test_main_uses_tot_agent(monkeypatch):
+    created = {}
+
+    class DummyTot:
+        def __init__(self, llm, evaluate):
+            created['called'] = True
+        def run(self, q):
+            return 'ok'
+
+    monkeypatch.setattr(src_main, 'ToTAgent', DummyTot)
+    monkeypatch.setattr(src_main, 'create_llm', lambda log_usage=True: lambda p: 'x')
+    monkeypatch.setattr(src_main, 'create_evaluator', lambda llm: lambda h: 1.0)
+    monkeypatch.setattr(src_main, 'setup_logging', lambda: None)
+    monkeypatch.setattr('builtins.input', lambda prompt='': '')
+    monkeypatch.setattr('builtins.print', lambda *a, **k: None)
+
+    src_main.main(['--agent', 'tot'])
+
+    assert created.get('called', False)
+
