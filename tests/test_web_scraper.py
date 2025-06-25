@@ -182,16 +182,16 @@ def test_custom_user_agent(monkeypatch):
     import requests
     monkeypatch.setattr(requests, "get", mock_get)
     monkeypatch.setenv("WEB_SCRAPER_USER_AGENT", expected)
-    # Reload module to pick up env change
-    import importlib
-    importlib.reload(web_scraper)
+    web_scraper._CACHE.clear()
+    web_scraper._ROBOTS.clear()
+    web_scraper.load_settings()
 
     try:
         text = web_scraper.scrape_website_content("http://example.com")
         assert text == "Test"
     finally:
         monkeypatch.delenv("WEB_SCRAPER_USER_AGENT", raising=False)
-        importlib.reload(web_scraper)
+        web_scraper.load_settings()
 
 
 def test_concurrent_calls(monkeypatch):
@@ -224,7 +224,8 @@ def test_concurrent_calls(monkeypatch):
 
     import requests
     monkeypatch.setattr(requests, "get", mock_get)
-    monkeypatch.setattr(web_scraper, "_DELAY", 0)
+    monkeypatch.setenv("WEB_SCRAPER_DELAY", "0")
+    web_scraper.load_settings()
     web_scraper._CACHE.clear()
     web_scraper._ROBOTS.clear()
     web_scraper._LAST_REQUEST_TIME = 0
@@ -244,3 +245,4 @@ def test_concurrent_calls(monkeypatch):
     assert all(r == "Hi" for r in results)
     # robots and page should be fetched once each
     assert call_count["n"] == 2
+    web_scraper.load_settings()

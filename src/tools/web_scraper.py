@@ -11,13 +11,25 @@ from pydantic import BaseModel, Field
 
 # Shared state protected by _LOCK
 _CACHE: Dict[str, Tuple[float, str]] = {}
-_CACHE_TTL = int(os.getenv("WEB_SCRAPER_CACHE_TTL", "3600"))
+_CACHE_TTL = 3600
 _ROBOTS: Dict[str, RobotFileParser] = {}
 _LAST_REQUEST_TIME = 0.0
-_DELAY = float(os.getenv("WEB_SCRAPER_DELAY", "1.0"))
+_DELAY = 1.0
 _LOCK = threading.RLock()
 # Default headers for all HTTP requests
-_HEADERS = {"User-Agent": os.getenv("WEB_SCRAPER_USER_AGENT", "Mozilla/5.0")}
+_HEADERS = {"User-Agent": "Mozilla/5.0"}
+
+
+def load_settings() -> None:
+    """Load configuration from environment variables."""
+    global _CACHE_TTL, _DELAY, _HEADERS
+    _CACHE_TTL = int(os.getenv("WEB_SCRAPER_CACHE_TTL", "3600"))
+    _DELAY = float(os.getenv("WEB_SCRAPER_DELAY", "1.0"))
+    _HEADERS = {"User-Agent": os.getenv("WEB_SCRAPER_USER_AGENT", "Mozilla/5.0")}
+
+
+# Initialize settings on import
+load_settings()
 
 
 def _respect_delay() -> None:
@@ -92,6 +104,8 @@ def scrape_website_content(url: str, max_chars: int = 1000) -> str:
 
 
 def get_tool() -> Tool:
+    """Return the web scraper tool with current environment settings."""
+    load_settings()
     return Tool(
         name="web_scraper",
         description="指定されたURLから主要テキストを抽出するツール。入力はURL。",
