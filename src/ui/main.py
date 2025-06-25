@@ -115,6 +115,14 @@ class ChatGPTClient:
                                     command=self.new_chat,
                                     font=("SF Pro Display", 14))
         new_chat_btn.pack(pady=10)
+
+        load_chat_btn = ctk.CTkButton(
+            left_panel,
+            text="会話を読み込み",
+            command=self.load_chat,
+            font=("SF Pro Display", 14),
+        )
+        load_chat_btn.pack(pady=10)
         
         # 右側パネル（チャット）
         right_panel = ctk.CTkFrame(main_container, fg_color="#ffffff")
@@ -399,6 +407,45 @@ class ChatGPTClient:
         self.file_list_text.configure(state="disabled")
         
         self.window.title("ChatGPT Desktop")
+
+    def load_chat(self):
+        """Open a saved conversation file and load its content."""
+        file_path = filedialog.askopenfilename(
+            title="会話を選択",
+            filetypes=[("Conversation", "*.json")],
+        )
+        if file_path:
+            self.load_conversation(file_path)
+
+    def load_conversation(self, file_path: str):
+        """Load conversation from a JSON file created by save_conversation."""
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception as e:
+            messagebox.showerror("読み込みエラー", f"会話の読み込みに失敗しました: {str(e)}")
+            return
+
+        self.current_title = data.get("title")
+        if self.current_title:
+            self.window.title(f"ChatGPT Desktop - {self.current_title}")
+        self.messages = data.get("messages", [])
+        meta = data.get("uploaded_files_metadata", [])
+        self.uploaded_files = [{"name": m["name"], "type": m["type"]} for m in meta]
+
+        # Refresh displays
+        self.update_file_list()
+        self.chat_display.configure(state="normal")
+        self.chat_display.delete("1.0", "end")
+        for msg in self.messages:
+            role = msg.get("role")
+            content = msg.get("content", "")
+            if isinstance(content, list):
+                # content may be structured as list of parts
+                content = "".join(part.get("text", "") for part in content)
+            prefix = "👤 You" if role == "user" else "🤖 Assistant"
+            self.chat_display.insert("end", f"\n{prefix}: {content}\n\n")
+        self.chat_display.configure(state="disabled")
 
     def process_queue(self):
         """キューからのメッセージをGUIに反映"""
