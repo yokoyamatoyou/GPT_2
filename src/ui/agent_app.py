@@ -19,9 +19,9 @@ def agent_worker(question: str, agent: ReActAgent, result_queue: queue.Queue) ->
 
 
 class AgentApp(ctk.CTk):
-    """Simple interface for interacting with ReActAgent."""
+    """Simple interface for interacting with :class:`ReActAgent`."""
 
-    def __init__(self, llm: Callable[[str], str] | None = None) -> None:
+    def __init__(self, llm: Callable[[str], str] | None = None, *, log_usage: bool = False) -> None:
         super().__init__()
 
         self.title("ReAct Agent")
@@ -52,7 +52,7 @@ class AgentApp(ctk.CTk):
         self.result_queue: queue.Queue[str] = queue.Queue()
 
         if llm is None:
-            llm = create_llm()
+            llm = create_llm(log_usage=log_usage)
         self.agent = ReActAgent(llm, [get_web_scraper()])
 
     def start_agent(self) -> None:
@@ -86,5 +86,5 @@ class AgentApp(ctk.CTk):
 
 
 if __name__ == "__main__":
-    app = AgentApp()
+    app = AgentApp(log_usage=True)
     app.mainloop()
