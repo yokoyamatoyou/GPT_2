@@ -90,6 +90,27 @@ program exits:
 ```bash
 python -m src.main --memory-file chat.json
 ```
+
+## Experimental ToT Agent
+
+The repository also ships with a tiny Tree-of-Thoughts agent. It explores
+multiple branches and chooses the one with the highest evaluation score.
+
+```python
+from src.agent import ToTAgent
+
+def llm(prompt: str) -> str:
+    ...
+
+def evaluate(history: str) -> float:
+    ...
+
+agent = ToTAgent(llm, evaluate)
+answer = agent.run("質問")
+```
+
+This implementation is intentionally simple but shows how an LLM can be used in
+a branch-and-bound style search loop.
 ## Verbose Logging
 
 Set `verbose=True` when creating `ReActAgent` to enable debug output using Python's `logging` module.
