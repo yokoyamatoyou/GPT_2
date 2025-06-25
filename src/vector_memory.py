@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List, Dict
 import json
+import os
 
 from .memory import BaseMemory
 
@@ -30,6 +31,7 @@ class VectorMemory(BaseMemory):
 
     def save(self, path: str) -> None:
         """Persist messages to a JSON file."""
+        os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, "w", encoding="utf-8") as f:
             json.dump({"messages": self.messages}, f, ensure_ascii=False, indent=2)
 
