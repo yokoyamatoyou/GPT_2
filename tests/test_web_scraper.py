@@ -149,3 +149,45 @@ def test_caching(monkeypatch):
     assert a == b == "Hi"
     # Should have fetched robots once and page once
     assert call_count["n"] == 2
+
+
+def test_custom_user_agent(monkeypatch):
+    expected = "MyAgent/2.0"
+
+    def mock_get(url, **kwargs):
+        assert kwargs["headers"]["User-Agent"] == expected
+
+        class Resp:
+            status_code = 200
+
+            def __init__(self, content):
+                self._content = content
+
+            def raise_for_status(self):
+                pass
+
+            @property
+            def content(self):
+                return self._content.encode("utf-8")
+
+            @property
+            def text(self):
+                return self._content
+
+        if url.endswith("robots.txt"):
+            return Resp("User-agent: *\nAllow: /")
+        return Resp("<html><body><main>Test</main></body></html>")
+
+    import requests
+    monkeypatch.setattr(requests, "get", mock_get)
+    monkeypatch.setenv("WEB_SCRAPER_USER_AGENT", expected)
+    # Reload module to pick up env change
+    import importlib
+    importlib.reload(web_scraper)
+
+    try:
+        text = web_scraper.scrape_website_content("http://example.com")
+        assert text == "Test"
+    finally:
+        monkeypatch.delenv("WEB_SCRAPER_USER_AGENT", raising=False)
+        importlib.reload(web_scraper)

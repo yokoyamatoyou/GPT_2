@@ -144,6 +144,13 @@ adjust these values with environment variables:
 
 - `WEB_SCRAPER_CACHE_TTL` – cache duration in seconds (default `3600`)
 - `WEB_SCRAPER_DELAY` – delay between HTTP requests in seconds (default `1.0`)
+- `WEB_SCRAPER_USER_AGENT` – value for the `User-Agent` header (default `Mozilla/5.0`)
+
+Example:
+
+```bash
+export WEB_SCRAPER_USER_AGENT="Mozilla/5.0 (compatible; MyAgent/1.0)"
+```
 
 ## Configuring Logging
 
