@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import os
 import logging
 from dotenv import load_dotenv
@@ -10,6 +11,7 @@ from .logging_utils import setup_logging
 from src.agent import ReActAgent
 from src.tools import get_web_scraper, get_sqlite_tool
 from src.memory import ConversationMemory
+from src.vector_memory import VectorMemory
 
 logger = logging.getLogger(__name__)
 
@@ -49,10 +51,26 @@ def create_llm(*, log_usage: bool = False) -> callable:
     return llm
 
 
-def main() -> None:
+def parse_args(args: list[str] | None = None) -> argparse.Namespace:
+    """Parse command line options."""
+    parser = argparse.ArgumentParser(description="Run the simple ReAct agent")
+    parser.add_argument(
+        "--memory",
+        choices=["conversation", "vector"],
+        default="conversation",
+        help="Type of memory store to use",
+    )
+    return parser.parse_args(args)
+
+
+def main(argv: list[str] | None = None) -> None:
+    args = parse_args(argv)
     setup_logging()
     llm = create_llm(log_usage=True)
-    memory = ConversationMemory()
+    if args.memory == "vector":
+        memory = VectorMemory()
+    else:
+        memory = ConversationMemory()
     tools = [get_web_scraper(), get_sqlite_tool()]
     agent = ReActAgent(llm, tools, memory)
 
@@ -66,4 +84,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+    main(sys.argv[1:])
