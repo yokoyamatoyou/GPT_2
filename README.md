@@ -84,6 +84,19 @@ Set `verbose=True` when creating `ReActAgent` to enable debug output using Pytho
 agent = ReActAgent(call_llm, [get_web_scraper()], verbose=True)
 ```
 
+## Token Usage Tracking
+
+The `create_llm` helper can log the number of tokens consumed and estimate the
+cost of each OpenAI API call. Set `OPENAI_TOKEN_PRICE` in your environment to the
+price per token (e.g. `0.000002`) and pass `log_usage=True` when creating the
+LLM:
+
+```python
+llm = create_llm(log_usage=True)
+```
+
+Log records will include the token count and calculated cost.
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
