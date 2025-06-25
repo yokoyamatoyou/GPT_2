@@ -27,3 +27,11 @@ def test_save_creates_directory(tmp_path):
     file = tmp_path / "nested" / "vec.json"
     mem.save(file)
     assert file.exists()
+
+
+def test_save_filename_no_directory(tmp_path, monkeypatch):
+    mem = VectorMemory()
+    mem.add("user", "hello")
+    monkeypatch.chdir(tmp_path)
+    mem.save("vec.json")
+    assert (tmp_path / "vec.json").exists()
