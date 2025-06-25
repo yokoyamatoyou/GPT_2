@@ -60,6 +60,10 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
         default="conversation",
         help="Type of memory store to use",
     )
+    parser.add_argument(
+        "--memory-file",
+        help="Path to JSON file for persisting conversation memory",
+    )
     return parser.parse_args(args)
 
 
@@ -71,6 +75,11 @@ def main(argv: list[str] | None = None) -> None:
         memory = VectorMemory()
     else:
         memory = ConversationMemory()
+    if args.memory_file and os.path.exists(args.memory_file):
+        try:
+            memory.load(args.memory_file)
+        except Exception as exc:
+            logger.warning("Failed to load memory file %s: %s", args.memory_file, exc)
     tools = [get_web_scraper(), get_sqlite_tool()]
     agent = ReActAgent(llm, tools, memory)
 
@@ -81,6 +90,11 @@ def main(argv: list[str] | None = None) -> None:
             break
         answer = agent.run(question)
         print(f"答え: {answer}")
+    if args.memory_file:
+        try:
+            memory.save(args.memory_file)
+        except Exception as exc:
+            logger.warning("Failed to save memory file %s: %s", args.memory_file, exc)
 
 
 if __name__ == "__main__":
