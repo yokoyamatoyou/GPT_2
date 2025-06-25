@@ -1,4 +1,5 @@
 from src.tools import web_scraper
+import threading
 
 scrape_website_content = web_scraper.scrape_website_content
 
@@ -191,3 +192,55 @@ def test_custom_user_agent(monkeypatch):
     finally:
         monkeypatch.delenv("WEB_SCRAPER_USER_AGENT", raising=False)
         importlib.reload(web_scraper)
+
+
+def test_concurrent_calls(monkeypatch):
+    html = "<html><body><main>Hi</main></body></html>"
+    call_count = {"n": 0}
+
+    def mock_get(url, **kwargs):
+        call_count["n"] += 1
+
+        class Resp:
+            status_code = 200
+
+            def __init__(self, content):
+                self._content = content
+
+            def raise_for_status(self):
+                pass
+
+            @property
+            def content(self):
+                return self._content.encode("utf-8")
+
+            @property
+            def text(self):
+                return self._content
+
+        if url.endswith("robots.txt"):
+            return Resp("User-agent: *\nAllow: /")
+        return Resp(html)
+
+    import requests
+    monkeypatch.setattr(requests, "get", mock_get)
+    monkeypatch.setattr(web_scraper, "_DELAY", 0)
+    web_scraper._CACHE.clear()
+    web_scraper._ROBOTS.clear()
+    web_scraper._LAST_REQUEST_TIME = 0
+
+    results = []
+
+    def worker():
+        results.append(web_scraper.scrape_website_content("http://example.com"))
+
+    threads = [threading.Thread(target=worker) for _ in range(5)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+
+    assert len(results) == 5
+    assert all(r == "Hi" for r in results)
+    # robots and page should be fetched once each
+    assert call_count["n"] == 2
