@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List, Dict, Protocol
 import json
+import os
 
 
 class BaseMemory(Protocol):
@@ -32,6 +33,7 @@ class ConversationMemory:
 
     def save(self, path: str) -> None:
         """Persist messages to a JSON file."""
+        os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, "w", encoding="utf-8") as f:
             json.dump({"messages": self.messages}, f, ensure_ascii=False, indent=2)
 

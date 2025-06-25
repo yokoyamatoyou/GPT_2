@@ -19,3 +19,11 @@ def test_save_and_load(tmp_path):
     other = VectorMemory()
     other.load(file)
     assert other.messages == mem.messages
+
+
+def test_save_creates_directory(tmp_path):
+    mem = VectorMemory()
+    mem.add("user", "hello")
+    file = tmp_path / "nested" / "vec.json"
+    mem.save(file)
+    assert file.exists()
