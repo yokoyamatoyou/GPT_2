@@ -10,15 +10,16 @@ class SQLiteQueryInput(BaseModel):
 
 def run_sqlite_query(path: str, query: str) -> str:
     """Run a SQL query against a SQLite database and return results as JSON."""
+    conn = sqlite3.connect(path)
     try:
-        conn = sqlite3.connect(path)
         cur = conn.cursor()
         cur.execute(query)
         rows = cur.fetchall()
-        conn.close()
         return json.dumps(rows, ensure_ascii=False)
     except Exception as e:
         return f"Error querying database: {e}"
+    finally:
+        conn.close()
 
 def get_tool() -> Tool:
     return Tool(
