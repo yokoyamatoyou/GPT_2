@@ -77,7 +77,12 @@ You can also try the agent from the command line using the built in runner:
 ```bash
 python -m src.main
 ```
-The command line runner loads both tools by default.
+The command line runner loads both tools by default. You can pass `--memory vector`
+to enable the `VectorMemory` store instead of the default conversation memory:
+
+```bash
+python -m src.main --memory vector
+```
 ## Verbose Logging
 
 Set `verbose=True` when creating `ReActAgent` to enable debug output using Python's `logging` module.
