@@ -1,4 +1,5 @@
 import queue
+import logging
 from types import SimpleNamespace
 
 from src.ui import main as GPT
@@ -45,3 +46,21 @@ def test_get_response_stream(monkeypatch):
         "\n",
         "__SAVE__",
     ]
+
+
+def test_generate_title_logs_error(caplog):
+    client = ChatGPTClient.__new__(ChatGPTClient)
+    client.window = SimpleNamespace(title=lambda *a, **k: None)
+
+    def raise_err(*a, **k):
+        raise RuntimeError("boom")
+
+    client.client = SimpleNamespace(
+        chat=SimpleNamespace(completions=SimpleNamespace(create=raise_err))
+    )
+
+    caplog.set_level(logging.ERROR)
+    client.generate_title("hi")
+
+    assert "boom" in caplog.text
+    assert client.current_title
