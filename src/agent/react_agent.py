@@ -1,11 +1,12 @@
 import re
 import logging
+import json
 from typing import Callable, Dict, List, Optional, Iterator
 
 from pydantic import BaseModel
 
 from src.tools.base import Tool, execute_tool
-from src.memory import ConversationMemory
+from src.memory import BaseMemory, ConversationMemory
 
 
 logger = logging.getLogger(__name__)
@@ -28,7 +29,7 @@ class ReActAgent:
         self,
         llm: Callable[[str], str],
         tools: List[Tool],
-        memory: Optional[ConversationMemory] = None,
+        memory: Optional[BaseMemory] = None,
         verbose: bool = False,
     ):
         self.llm = llm
@@ -49,9 +50,13 @@ class ReActAgent:
         scratchpad = ""
         if self.memory is not None:
             self.memory.add("user", question)
-            history = "\n".join(
-                f"{m['role']}: {m['content']}" for m in self.memory.messages[:-1]
-            )
+            try:
+                history_lines = self.memory.search(question, top_k=3)
+            except Exception:
+                history_lines = [
+                    f"{m['role']}: {m['content']}" for m in self.memory.messages[:-1]
+                ]
+            history = "\n".join(history_lines)
         else:
             history = ""
 
@@ -83,7 +88,14 @@ class ReActAgent:
             tool_name, tool_input = action_match.groups()
             if self.verbose:
                 logger.info("Executing tool %s with %s", tool_name, tool_input)
-            observation = execute_tool(tool_name, {"url": tool_input}, self.tools)
+            try:
+                args: Dict[str, str] = json.loads(tool_input)
+                if not isinstance(args, dict):
+                    raise ValueError
+            except Exception:
+                args = {"url": tool_input}
+
+            observation = execute_tool(tool_name, args, self.tools)
             if self.verbose:
                 logger.debug("Observation: %s", observation)
             yield f"観察: {observation}"
