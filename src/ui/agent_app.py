@@ -5,7 +5,7 @@ import customtkinter as ctk
 from typing import Callable
 
 from src.agent import ReActAgent
-from src.tools import get_web_scraper
+from src.tools import get_web_scraper, get_sqlite_tool
 from src.main import create_llm
 
 
@@ -53,7 +53,8 @@ class AgentApp(ctk.CTk):
 
         if llm is None:
             llm = create_llm(log_usage=log_usage)
-        self.agent = ReActAgent(llm, [get_web_scraper()])
+        tools = [get_web_scraper(), get_sqlite_tool()]
+        self.agent = ReActAgent(llm, tools)
 
     def start_agent(self) -> None:
         question = self.entry.get().strip()

@@ -61,27 +61,29 @@ the agent programmatically:
 
 ```python
 from src.agent import ReActAgent
-from src.tools import get_web_scraper
+from src.tools import get_web_scraper, get_sqlite_tool
 
 def call_llm(prompt: str) -> str:
     # integrate with your favourite LLM here
     ...
 
-agent = ReActAgent(call_llm, [get_web_scraper()])
+agent = ReActAgent(call_llm, [get_web_scraper(), get_sqlite_tool()])
 result = agent.run("東京の天気を教えて")
 ```
+The agent includes a web scraping tool and a SQLite query tool.
 
 You can also try the agent from the command line using the built in runner:
 
 ```bash
 python -m src.main
 ```
+The command line runner loads both tools by default.
 ## Verbose Logging
 
 Set `verbose=True` when creating `ReActAgent` to enable debug output using Python's `logging` module.
 
 ```python
-agent = ReActAgent(call_llm, [get_web_scraper()], verbose=True)
+agent = ReActAgent(call_llm, [get_web_scraper(), get_sqlite_tool()], verbose=True)
 ```
 
 ## Token Usage Tracking
