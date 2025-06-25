@@ -30,6 +30,11 @@ cp .env.example .env
 echo "OPENAI_API_KEY=your_key_here" >> .env
 ```
 
+`create_llm` reads additional variables if present:
+
+- `OPENAI_MODEL` – default model to use (defaults to `gpt-3.5-turbo`)
+- `OPENAI_TOKEN_PRICE` – price per token for usage cost logging
+
 ### 4. Launch the application
 
 Run the GUI with Python:
@@ -129,7 +134,9 @@ agent = ReActAgent(call_llm, [get_web_scraper(), get_sqlite_tool()], verbose=Tru
 The `create_llm` helper can log the number of tokens consumed and estimate the
 cost of each OpenAI API call. Set `OPENAI_TOKEN_PRICE` in your environment to the
 price per token (e.g. `0.000002`) and pass `log_usage=True` when creating the
-LLM:
+LLM. The cost is calculated as `token_count * OPENAI_TOKEN_PRICE`. The model used
+for completion defaults to `gpt-3.5-turbo` but can be overridden with
+`OPENAI_MODEL`:
 
 ```python
 llm = create_llm(log_usage=True)
