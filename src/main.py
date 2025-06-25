@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 
 from src.agent import ReActAgent
-from src.tools.web_scraper import get_tool
+from src.tools import get_web_scraper, get_sqlite_tool
 from src.memory import ConversationMemory
 
 logger = logging.getLogger(__name__)
@@ -50,7 +50,8 @@ def create_llm(*, log_usage: bool = False) -> callable:
 def main() -> None:
     llm = create_llm(log_usage=True)
     memory = ConversationMemory()
-    agent = ReActAgent(llm, [get_tool()], memory)
+    tools = [get_web_scraper(), get_sqlite_tool()]
+    agent = ReActAgent(llm, tools, memory)
 
     print("Enter an empty line to quit.")
     while True:
