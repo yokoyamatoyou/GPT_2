@@ -1,4 +1,5 @@
 from typing import Optional, Dict, Tuple
+import os
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse, urljoin
@@ -8,10 +9,10 @@ import time
 from pydantic import BaseModel, Field
 
 _CACHE: Dict[str, Tuple[float, str]] = {}
-_CACHE_TTL = 3600  # seconds
+_CACHE_TTL = int(os.getenv("WEB_SCRAPER_CACHE_TTL", "3600"))
 _ROBOTS: Dict[str, RobotFileParser] = {}
 _LAST_REQUEST_TIME = 0.0
-_DELAY = 1.0  # seconds between requests
+_DELAY = float(os.getenv("WEB_SCRAPER_DELAY", "1.0"))
 
 
 def _respect_delay() -> None:

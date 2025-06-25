@@ -3,10 +3,8 @@ import logging
 import json
 from typing import Callable, Dict, List, Optional, Iterator
 
-from pydantic import BaseModel
-
 from src.tools.base import Tool, execute_tool
-from src.memory import BaseMemory, ConversationMemory
+from src.memory import BaseMemory
 
 
 logger = logging.getLogger(__name__)

@@ -10,11 +10,8 @@ from tkinter import filedialog, messagebox
 from openai import OpenAI
 import docx
 import PyPDF2
-from PIL import Image
 import openpyxl
 import base64
-import io
-from typing import Optional, List, Dict
 from dotenv import load_dotenv
 
 # Load environment variables from .env if present
