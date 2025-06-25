@@ -159,8 +159,14 @@ Python
 from dotenv import load\_dotenv  
 import os
 
-load\_dotenv() \#.envファイルから環境変数を読み込む  
+load\_dotenv() \#.envファイルから環境変数を読み込む
 api\_key \= os.getenv("OPENAI\_API\_KEY")
+
+#### **Web Scraper 用の環境変数**
+
+- `WEB_SCRAPER_CACHE_TTL`   \- ページキャッシュの有効期限（秒単位）。デフォルトは 3600
+- `WEB_SCRAPER_DELAY`       \- HTTP リクエスト間の待機時間（秒）。デフォルトは 1.0
+- `WEB_SCRAPER_USER_AGENT`  \- User-Agent ヘッダーの値。デフォルトは "Mozilla/5.0"
 
 #### **ロギングとデバッグ**
 
