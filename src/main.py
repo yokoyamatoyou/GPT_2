@@ -5,6 +5,8 @@ import logging
 from dotenv import load_dotenv
 from openai import OpenAI
 
+from .logging_utils import setup_logging
+
 from src.agent import ReActAgent
 from src.tools import get_web_scraper, get_sqlite_tool
 from src.memory import ConversationMemory
@@ -48,6 +50,7 @@ def create_llm(*, log_usage: bool = False) -> callable:
 
 
 def main() -> None:
+    setup_logging()
     llm = create_llm(log_usage=True)
     memory = ConversationMemory()
     tools = [get_web_scraper(), get_sqlite_tool()]

@@ -99,6 +99,16 @@ llm = create_llm(log_usage=True)
 
 Log records will include the token count and calculated cost.
 
+## Configuring Logging
+
+Use `setup_logging` to send logs to both the console and optionally a file.
+Set the `AGENT_LOG_FILE` environment variable to define a default log path.
+
+```python
+from src import setup_logging
+setup_logging(level=logging.DEBUG)  # uses AGENT_LOG_FILE if set
+```
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
