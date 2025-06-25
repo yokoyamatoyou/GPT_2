@@ -8,7 +8,7 @@ from openai import OpenAI
 
 from .logging_utils import setup_logging
 
-from src.agent import ReActAgent
+from src.agent import ReActAgent, ToTAgent
 from src.tools import get_web_scraper, get_sqlite_tool
 from src.memory import ConversationMemory
 from src.vector_memory import VectorMemory
@@ -51,9 +51,27 @@ def create_llm(*, log_usage: bool = False) -> callable:
     return llm
 
 
+def create_evaluator(llm: callable) -> callable:
+    """Create an evaluation function for :class:`ToTAgent`."""
+
+    def evaluate(history: str) -> float:
+        prompt = (
+            "以下の思考の有用性を0から1の数値で評価してください。数値のみ回答してください。\n"
+            f"{history}\nスコア:"
+        )
+        resp = llm(prompt)
+        try:
+            return float(resp.strip())
+        except Exception:
+            logger.warning("Failed to parse evaluation score from '%s'", resp)
+            return 0.0
+
+    return evaluate
+
+
 def parse_args(args: list[str] | None = None) -> argparse.Namespace:
     """Parse command line options."""
-    parser = argparse.ArgumentParser(description="Run the simple ReAct agent")
+    parser = argparse.ArgumentParser(description="Run the simple agent")
     parser.add_argument(
         "--memory",
         choices=["conversation", "vector"],
@@ -64,6 +82,12 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
         "--memory-file",
         help="Path to JSON file for persisting conversation memory",
     )
+    parser.add_argument(
+        "--agent",
+        choices=["react", "tot"],
+        default="react",
+        help="Which agent implementation to use (tot is experimental)",
+    )
     return parser.parse_args(args)
 
 
@@ -71,17 +95,22 @@ def main(argv: list[str] | None = None) -> None:
     args = parse_args(argv)
     setup_logging()
     llm = create_llm(log_usage=True)
-    if args.memory == "vector":
-        memory = VectorMemory()
+    memory = None
+    tools = None
+    if args.agent == "react":
+        memory = VectorMemory() if args.memory == "vector" else ConversationMemory()
+        if args.memory_file and os.path.exists(args.memory_file):
+            try:
+                memory.load(args.memory_file)
+            except Exception as exc:
+                logger.warning(
+                    "Failed to load memory file %s: %s", args.memory_file, exc
+                )
+        tools = [get_web_scraper(), get_sqlite_tool()]
+        agent = ReActAgent(llm, tools, memory)
     else:
-        memory = ConversationMemory()
-    if args.memory_file and os.path.exists(args.memory_file):
-        try:
-            memory.load(args.memory_file)
-        except Exception as exc:
-            logger.warning("Failed to load memory file %s: %s", args.memory_file, exc)
-    tools = [get_web_scraper(), get_sqlite_tool()]
-    agent = ReActAgent(llm, tools, memory)
+        evaluator = create_evaluator(llm)
+        agent = ToTAgent(llm, evaluator)
 
     print("Enter an empty line to quit.")
     while True:
@@ -90,11 +119,13 @@ def main(argv: list[str] | None = None) -> None:
             break
         answer = agent.run(question)
         print(f"答え: {answer}")
-    if args.memory_file:
+    if args.memory_file and memory is not None:
         try:
             memory.save(args.memory_file)
         except Exception as exc:
-            logger.warning("Failed to save memory file %s: %s", args.memory_file, exc)
+            logger.warning(
+                "Failed to save memory file %s: %s", args.memory_file, exc
+            )
 
 
 if __name__ == "__main__":
