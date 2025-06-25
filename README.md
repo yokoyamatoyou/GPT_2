@@ -137,6 +137,14 @@ llm = create_llm(log_usage=True)
 
 Log records will include the token count and calculated cost.
 
+## Web Scraper Settings
+
+The built-in web scraping tool caches pages and waits between requests. You can
+adjust these values with environment variables:
+
+- `WEB_SCRAPER_CACHE_TTL` – cache duration in seconds (default `3600`)
+- `WEB_SCRAPER_DELAY` – delay between HTTP requests in seconds (default `1.0`)
+
 ## Configuring Logging
 
 Use `setup_logging` to send logs to both the console and optionally a file.
