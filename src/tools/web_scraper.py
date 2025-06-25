@@ -13,6 +13,8 @@ _CACHE_TTL = int(os.getenv("WEB_SCRAPER_CACHE_TTL", "3600"))
 _ROBOTS: Dict[str, RobotFileParser] = {}
 _LAST_REQUEST_TIME = 0.0
 _DELAY = float(os.getenv("WEB_SCRAPER_DELAY", "1.0"))
+# Default headers for all HTTP requests
+_HEADERS = {"User-Agent": os.getenv("WEB_SCRAPER_USER_AGENT", "Mozilla/5.0")}
 
 
 def _respect_delay() -> None:
@@ -44,7 +46,7 @@ def scrape_website_content(url: str, max_chars: int = 1000) -> str:
         robots_url = urljoin(base, "/robots.txt")
         try:
             _respect_delay()
-            resp = requests.get(robots_url, headers={"User-Agent": "Mozilla/5.0"}, timeout=5)
+            resp = requests.get(robots_url, headers=_HEADERS, timeout=5)
             if resp.status_code == 200:
                 rp.parse(resp.text.splitlines())
             else:
@@ -63,7 +65,7 @@ def scrape_website_content(url: str, max_chars: int = 1000) -> str:
     try:
         _respect_delay()
         response = requests.get(
-            url, headers={"User-Agent": "Mozilla/5.0"}, timeout=10
+            url, headers=_HEADERS, timeout=10
         )
         response.raise_for_status()
     except Exception as e:
