@@ -347,9 +347,10 @@ class ChatGPTClient:
             self.current_title = response.choices[0].message.content.strip()
             self.window.title(f"ChatGPT Desktop - {self.current_title}")
             
-        except Exception: # エラーハンドリングを少し具体的に
+        except Exception:
+            logging.exception("Failed to generate title")
             self.current_title = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            self.window.title(f"ChatGPT Desktop - {self.current_title}") # エラー時もタイトル設定
+            self.window.title(f"ChatGPT Desktop - {self.current_title}")  # エラー時もタイトル設定
     
     def save_conversation(self):
         """会話をJSONファイルとして保存"""
