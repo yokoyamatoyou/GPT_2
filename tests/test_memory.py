@@ -19,3 +19,11 @@ def test_save_creates_directory(tmp_path):
     file = tmp_path / "nested" / "conv.json"
     mem.save(file)
     assert file.exists()
+
+
+def test_save_filename_no_directory(tmp_path, monkeypatch):
+    mem = ConversationMemory()
+    mem.add("user", "hi")
+    monkeypatch.chdir(tmp_path)
+    mem.save("conv.json")
+    assert (tmp_path / "conv.json").exists()
