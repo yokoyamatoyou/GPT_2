@@ -56,13 +56,17 @@ def create_llm(*, log_usage: bool = False) -> callable:
         raise RuntimeError("OPENAI_API_KEY not set")
     model = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
     token_price = float(os.getenv("OPENAI_TOKEN_PRICE", "0"))
+    timeout = float(os.getenv("OPENAI_TIMEOUT", "0")) or None
     client = OpenAI(api_key=api_key)
 
     def llm(prompt: str) -> str:
-        resp = client.chat.completions.create(
-            model=model,
-            messages=[{"role": "user", "content": prompt}],
-        )
+        params = {
+            "model": model,
+            "messages": [{"role": "user", "content": prompt}],
+        }
+        if timeout is not None:
+            params["timeout"] = timeout
+        resp = client.chat.completions.create(**params)
         if log_usage and getattr(resp, "usage", None):
             try:
                 total = resp.usage.total_tokens
