@@ -121,6 +121,12 @@ Enable debug logging and verbose agent output with `--verbose`:
 python -m src.main --verbose
 ```
 
+Display each reasoning step as it happens with `--stream`:
+
+```bash
+python -m src.main --stream
+```
+
 ## Experimental ToT Agent
 
 The repository also ships with a tiny Tree-of-Thoughts agent. It explores

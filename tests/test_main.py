@@ -19,6 +19,10 @@ def test_parse_args_verbose():
     args = src_main.parse_args(['--verbose'])
     assert args.verbose
 
+def test_parse_args_stream():
+    args = src_main.parse_args(['--stream'])
+    assert args.stream
+
 def test_parse_args_tot_options():
     args = src_main.parse_args(['--agent', 'tot', '--depth', '5', '--breadth', '6'])
     assert args.agent == 'tot'
@@ -168,4 +172,31 @@ def test_main_verbose(monkeypatch):
 
     assert captured['verbose'] is True
     assert captured['level'] == logging.DEBUG
+
+
+def test_main_stream(monkeypatch):
+    printed = []
+
+    class DummyAgent:
+        def __init__(self, llm, tools, memory, verbose=False):
+            pass
+
+        def run_iter(self, q):
+            yield "step1"
+            yield "step2"
+
+    monkeypatch.setattr(src_main, 'ReActAgent', DummyAgent)
+    monkeypatch.setattr(src_main, 'create_llm', lambda log_usage=True: lambda p: 'x')
+    monkeypatch.setattr(src_main, 'setup_logging', lambda **k: None)
+    monkeypatch.setattr(src_main, 'get_web_scraper', lambda: None)
+    monkeypatch.setattr(src_main, 'get_sqlite_tool', lambda: None)
+
+    inputs = iter(["hi", ""]) 
+    monkeypatch.setattr('builtins.input', lambda prompt='': next(inputs))
+    monkeypatch.setattr('builtins.print', lambda *a, **k: printed.append(' '.join(map(str, a))))
+
+    src_main.main(['--stream'])
+
+    assert 'step1' in printed
+    assert 'step2' in printed
 
