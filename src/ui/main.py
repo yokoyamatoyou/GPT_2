@@ -31,6 +31,10 @@ class ChatGPTClient:
         self.window = ctk.CTk()
         self.window.title("ChatGPT Desktop")
         self.window.geometry("1200x800")
+
+        # モデルの初期値を環境変数から読み込む
+        default_model = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
+        self.model_var = ctk.StringVar(value=default_model)
         
         # OpenAI クライアントの初期化
         api_key = os.getenv("OPENAI_API_KEY")
@@ -75,12 +79,17 @@ class ChatGPTClient:
                                   font=("SF Pro Display", 14))
         model_label.pack(pady=(20, 5))
         
-        self.model_var = ctk.StringVar(value="gpt-4.1-mini-2025-04-14") # <--- 変更点: デフォルトモデル
-        model_menu = ctk.CTkOptionMenu(left_panel, 
-                                      values=["gpt-4.1-mini-2025-04-14", 
-                                              "gpt-4.1-nano-2025-04-14", 
-                                              "gpt-4.1-2025-04-14"], # <--- 変更点: モデルリスト
-                                      variable=self.model_var, width=250)
+        model_menu = ctk.CTkOptionMenu(
+            left_panel,
+            values=[
+                "gpt-3.5-turbo",
+                "gpt-4.1-mini-2025-04-14",
+                "gpt-4.1-nano-2025-04-14",
+                "gpt-4.1-2025-04-14",
+            ],
+            variable=self.model_var,
+            width=250,
+        )
         model_menu.pack(pady=(0, 20))
         
         # 温度設定
