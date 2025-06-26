@@ -9,6 +9,11 @@ def test_parse_args_memory_file():
     args = src_main.parse_args(['--memory-file', 'mem.json'])
     assert args.memory_file == 'mem.json'
 
+
+def test_parse_args_log_file():
+    args = src_main.parse_args(['--log-file', 'a.log'])
+    assert args.log_file == 'a.log'
+
 def test_parse_args_tot_options():
     args = src_main.parse_args(['--agent', 'tot', '--depth', '5', '--breadth', '6'])
     assert args.agent == 'tot'
@@ -35,7 +40,7 @@ def test_main_uses_vector_memory(monkeypatch):
 
     monkeypatch.setattr(src_main, 'ReActAgent', DummyAgent)
     monkeypatch.setattr(src_main, 'create_llm', lambda log_usage=True: lambda p: 'x')
-    monkeypatch.setattr(src_main, 'setup_logging', lambda: None)
+    monkeypatch.setattr(src_main, 'setup_logging', lambda **k: None)
     monkeypatch.setattr(src_main, 'get_web_scraper', lambda: None)
     monkeypatch.setattr(src_main, 'get_sqlite_tool', lambda: None)
     monkeypatch.setattr('builtins.input', lambda prompt='': '')
@@ -69,7 +74,7 @@ def test_main_loads_and_saves_memory(tmp_path, monkeypatch):
 
     monkeypatch.setattr(src_main, 'ReActAgent', DummyAgent)
     monkeypatch.setattr(src_main, 'create_llm', lambda log_usage=True: lambda p: 'x')
-    monkeypatch.setattr(src_main, 'setup_logging', lambda: None)
+    monkeypatch.setattr(src_main, 'setup_logging', lambda **k: None)
     monkeypatch.setattr(src_main, 'get_web_scraper', lambda: None)
     monkeypatch.setattr(src_main, 'get_sqlite_tool', lambda: None)
     monkeypatch.setattr(src_main, 'ConversationMemory', DummyMemory)
@@ -97,7 +102,7 @@ def test_main_uses_tot_agent(monkeypatch):
     monkeypatch.setattr(src_main, 'ToTAgent', DummyTot)
     monkeypatch.setattr(src_main, 'create_llm', lambda log_usage=True: lambda p: 'x')
     monkeypatch.setattr(src_main, 'create_evaluator', lambda llm: lambda h: 1.0)
-    monkeypatch.setattr(src_main, 'setup_logging', lambda: None)
+    monkeypatch.setattr(src_main, 'setup_logging', lambda **k: None)
     monkeypatch.setattr('builtins.input', lambda prompt='': '')
     monkeypatch.setattr('builtins.print', lambda *a, **k: None)
 
@@ -106,4 +111,29 @@ def test_main_uses_tot_agent(monkeypatch):
     assert created.get('called', False)
     assert created['depth'] == 3
     assert created['breadth'] == 4
+
+
+def test_main_passes_log_file(monkeypatch):
+    captured = {}
+
+    class DummyAgent:
+        def __init__(self, llm, tools, memory):
+            pass
+        def run(self, q):
+            return 'ok'
+
+    def fake_setup_logging(*, log_file=None):
+        captured['file'] = log_file
+
+    monkeypatch.setattr(src_main, 'ReActAgent', DummyAgent)
+    monkeypatch.setattr(src_main, 'create_llm', lambda log_usage=True: lambda p: 'x')
+    monkeypatch.setattr(src_main, 'setup_logging', fake_setup_logging)
+    monkeypatch.setattr(src_main, 'get_web_scraper', lambda: None)
+    monkeypatch.setattr(src_main, 'get_sqlite_tool', lambda: None)
+    monkeypatch.setattr('builtins.input', lambda prompt='': '')
+    monkeypatch.setattr('builtins.print', lambda *a, **k: None)
+
+    src_main.main(['--log-file', 'out.log'])
+
+    assert captured['file'] == 'out.log'
 
