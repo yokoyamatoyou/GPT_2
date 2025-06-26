@@ -74,10 +74,10 @@ npm install -g @mermaid-js/mermaid-cli
 
 ## Running Tests
 
-Install the development requirements:
+Install the runtime and development requirements:
 
 ```bash
-pip install -r requirements-dev.txt
+pip install -r requirements.txt -r requirements-dev.txt
 ```
 
 Then execute the test suite with:
