@@ -1,5 +1,5 @@
 import re
-from typing import Callable, List, Tuple
+from typing import Callable, List, Tuple, Iterator
 
 
 class ToTAgent:
@@ -57,13 +57,22 @@ class ToTAgent:
         match = self.FINAL_RE.search(resp)
         return match.group(1).strip() if match else resp.strip()
 
-    def run(self, question: str) -> str:
-        """Execute the search loop and return the final answer."""
+    def run_iter(self, question: str) -> Iterator[str]:
+        """Generate reasoning steps and yield the final answer.
+
+        The iterator yields strings describing each phase of the search:
+
+        * ``思考候補`` lines listing proposed thoughts
+        * ``選択`` lines showing which path was chosen and its score
+        * a ``最終的な答え`` line containing the answer at the end
+        """
         nodes: List[Tuple[str, float]] = [("", 0.0)]
         for _ in range(self.max_depth):
             candidates: List[Tuple[str, float]] = []
             for hist, _score in nodes:
                 thoughts = self._propose(question, hist)
+                if thoughts:
+                    yield "\n".join(f"思考候補: {t}" for t in thoughts)
                 for t in thoughts:
                     new_hist = (hist + "\n" + t) if hist else t
                     score = self.evaluate(new_hist)
@@ -72,5 +81,16 @@ class ToTAgent:
                 break
             candidates.sort(key=lambda x: x[1], reverse=True)
             nodes = candidates[: self.breadth]
+            yield f"選択: {nodes[0][0]} (score={nodes[0][1]:.2f})"
         best_history = nodes[0][0]
-        return self._final(question, best_history)
+        answer = self._final(question, best_history)
+        yield f"最終的な答え: {answer}"
+        return
+
+    def run(self, question: str) -> str:
+        """Execute the search loop and return the final answer."""
+        answer = None
+        for step in self.run_iter(question):
+            if step.startswith("最終的な答え:"):
+                answer = step[len("最終的な答え:"):].strip()
+        return answer or ""
