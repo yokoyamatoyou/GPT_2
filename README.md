@@ -109,6 +109,12 @@ program exits:
 ```bash
 python -m src.main --memory-file chat.json
 ```
+Logs are written to the console by default. Use `--log-file` to also save them
+to a file (or set the `AGENT_LOG_FILE` environment variable):
+
+```bash
+python -m src.main --log-file agent.log
+```
 
 ## Experimental ToT Agent
 

@@ -106,12 +106,16 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
         default=2,
         help="Number of branches to keep at each depth for the ToT agent",
     )
+    parser.add_argument(
+        "--log-file",
+        help="Write logs to the specified file (overrides AGENT_LOG_FILE)",
+    )
     return parser.parse_args(args)
 
 
 def main(argv: list[str] | None = None) -> None:
     args = parse_args(argv)
-    setup_logging()
+    setup_logging(log_file=args.log_file)
     llm = create_llm(log_usage=True)
     memory = None
     tools = None
