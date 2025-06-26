@@ -115,6 +115,11 @@ to a file (or set the `AGENT_LOG_FILE` environment variable):
 ```bash
 python -m src.main --log-file agent.log
 ```
+Enable debug logging and verbose agent output with `--verbose`:
+
+```bash
+python -m src.main --verbose
+```
 
 ## Experimental ToT Agent
 
