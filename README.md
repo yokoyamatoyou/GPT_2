@@ -137,6 +137,10 @@ def evaluate(history: str) -> float:
 
 agent = ToTAgent(llm, evaluate)
 answer = agent.run("質問")
+
+# Stream intermediate reasoning steps
+for step in agent.run_iter("質問"):
+    print(step)
 ```
 
 This implementation is intentionally simple but shows how an LLM can be used in
