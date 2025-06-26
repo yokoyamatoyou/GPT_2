@@ -8,6 +8,7 @@ from urllib.robotparser import RobotFileParser
 import time
 
 from pydantic import BaseModel, Field
+from .base import Tool
 
 # Shared state protected by _LOCK
 _CACHE: Dict[str, Tuple[float, str]] = {}
@@ -39,9 +40,6 @@ def _respect_delay() -> None:
         if since < _DELAY:
             time.sleep(_DELAY - since)
         _LAST_REQUEST_TIME = time.time()
-
-from .base import Tool
-
 
 class ScraperInput(BaseModel):
     url: str = Field(description="WebページのURL")
