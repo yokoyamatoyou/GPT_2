@@ -115,6 +115,11 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="Enable debug logging and verbose agent output",
     )
+    parser.add_argument(
+        "--stream",
+        action="store_true",
+        help="Print intermediate reasoning steps while running",
+    )
     return parser.parse_args(args)
 
 
@@ -150,8 +155,12 @@ def main(argv: list[str] | None = None) -> None:
         question = input("質問: ").strip()
         if not question:
             break
-        answer = agent.run(question)
-        print(f"答え: {answer}")
+        if args.stream:
+            for step in agent.run_iter(question):
+                print(step)
+        else:
+            answer = agent.run(question)
+            print(f"答え: {answer}")
     if args.memory_file and memory is not None:
         try:
             memory.save(args.memory_file)
