@@ -18,6 +18,8 @@ When modifying this project, keep the following behaviors in mind:
 1. Diagram generation tools `create_graphviz_diagram` and `create_mermaid_diagram` convert DOT or Mermaid code to PNG using external CLI commands. These features require `Graphviz` (the `dot` command) and the `Mermaid CLI` (`mmdc`) to be installed and accessible in the system `PATH`.
 2. `ChatGPTClient` exposes these tools via the OpenAI tools API and streams tokens with `stream=True`.
 3. On the first user message, a system prompt instructs the assistant to append prompt advice if the query is vague.
+4. `create_llm` reads an optional `OPENAI_TIMEOUT` environment variable and passes it
+   as the request timeout when calling the OpenAI API.
 
 Document further changes to these features in this section so future Codex sessions remain aware of the expected behavior.
 
