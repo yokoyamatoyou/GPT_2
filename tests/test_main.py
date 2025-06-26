@@ -30,6 +30,35 @@ def test_parse_args_tot_options():
     assert args.breadth == 6
 
 
+def test_parse_args_tot_env(monkeypatch):
+    monkeypatch.setenv('TOT_DEPTH', '7')
+    monkeypatch.setenv('TOT_BREADTH', '8')
+    args = src_main.parse_args(['--agent', 'tot'])
+    assert args.depth == 7
+    assert args.breadth == 8
+
+
+def test_parse_args_tot_env_validation(monkeypatch):
+    import pytest
+    monkeypatch.setenv('TOT_DEPTH', '0')
+    with pytest.raises(SystemExit):
+        src_main.parse_args(['--agent', 'tot'])
+    monkeypatch.setenv('TOT_DEPTH', '2')
+    monkeypatch.setenv('TOT_BREADTH', '-1')
+    with pytest.raises(SystemExit):
+        src_main.parse_args(['--agent', 'tot'])
+
+
+def test_parse_args_tot_env_ignored_for_react(monkeypatch):
+    monkeypatch.setenv('TOT_DEPTH', '0')
+    monkeypatch.setenv('TOT_BREADTH', '0')
+    # Should not raise SystemExit because the default agent is react
+    args = src_main.parse_args([])
+    assert args.agent == 'react'
+    assert args.depth == 2
+    assert args.breadth == 2
+
+
 def test_parse_args_tot_option_validation():
     import pytest
     with pytest.raises(SystemExit):

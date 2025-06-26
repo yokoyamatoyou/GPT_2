@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import os
 import logging
+import sys
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -14,6 +15,30 @@ from src.memory import ConversationMemory
 from src.vector_memory import VectorMemory
 
 logger = logging.getLogger(__name__)
+
+
+def positive_int(value: str) -> int:
+    """Return *value* as a positive ``int``.
+
+    Raises ``argparse.ArgumentTypeError`` if ``value`` is not a positive
+    integer.
+    """
+    ivalue = int(value)
+    if ivalue < 1:
+        raise argparse.ArgumentTypeError("must be a positive integer")
+    return ivalue
+
+
+def _read_tot_env() -> tuple[int | None, int | None]:
+    """Return depth and breadth from environment variables if set."""
+    depth = os.getenv("TOT_DEPTH")
+    breadth = os.getenv("TOT_BREADTH")
+    try:
+        depth_val = positive_int(depth) if depth is not None else None
+        breadth_val = positive_int(breadth) if breadth is not None else None
+    except argparse.ArgumentTypeError as exc:  # pragma: no cover - just re-raise
+        raise SystemExit(exc)
+    return depth_val, breadth_val
 
 
 def create_llm(*, log_usage: bool = False) -> callable:
@@ -72,12 +97,6 @@ def create_evaluator(llm: callable) -> callable:
 def parse_args(args: list[str] | None = None) -> argparse.Namespace:
     """Parse command line options."""
     parser = argparse.ArgumentParser(description="Run the simple agent")
-
-    def positive_int(value: str) -> int:
-        ivalue = int(value)
-        if ivalue < 1:
-            raise argparse.ArgumentTypeError("must be a positive integer")
-        return ivalue
     parser.add_argument(
         "--memory",
         choices=["conversation", "vector"],
@@ -94,16 +113,19 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
         default="react",
         help="Which agent implementation to use (tot is experimental)",
     )
+    depth_default = 2
+    breadth_default = 2
+
     parser.add_argument(
         "--depth",
         type=positive_int,
-        default=2,
+        default=depth_default,
         help="Max search depth for the ToT agent",
     )
     parser.add_argument(
         "--breadth",
         type=positive_int,
-        default=2,
+        default=breadth_default,
         help="Number of branches to keep at each depth for the ToT agent",
     )
     parser.add_argument(
@@ -120,7 +142,21 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="Print intermediate reasoning steps while running",
     )
-    return parser.parse_args(args)
+    parsed = parser.parse_args(args)
+
+    arg_list = args if args is not None else sys.argv[1:]
+    if parsed.agent == "tot":
+        if "--depth" not in arg_list or "--breadth" not in arg_list:
+            try:
+                depth_val, breadth_val = _read_tot_env()
+            except SystemExit as exc:
+                raise SystemExit(f"Invalid TOT_DEPTH/BREADTH: {exc}")
+            if "--depth" not in arg_list and depth_val is not None:
+                parsed.depth = depth_val
+            if "--breadth" not in arg_list and breadth_val is not None:
+                parsed.breadth = breadth_val
+
+    return parsed
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -180,5 +216,4 @@ def main(argv: list[str] | None = None) -> None:
 
 
 if __name__ == "__main__":
-    import sys
     main(sys.argv[1:])

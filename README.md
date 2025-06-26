@@ -127,6 +127,9 @@ You can adjust the search parameters for the ToT agent using `--depth` and
 ```bash
 python -m src.main --agent tot --depth 3 --breadth 4
 ```
+Alternatively set the defaults with the `TOT_DEPTH` and `TOT_BREADTH`
+environment variables. Invalid values are ignored unless you run the ToT
+agent.
 You can persist the conversation across runs by specifying `--memory-file` with a
 path to a JSON file. The memory will be loaded at startup and saved when the
 program exits:
@@ -213,6 +216,16 @@ Example:
 ```bash
 export WEB_SCRAPER_USER_AGENT="Mozilla/5.0 (compatible; MyAgent/1.0)"
 ```
+
+## Tree-of-Thoughts Agent Settings
+
+The search depth and branching factor for the ToT agent can be set with
+environment variables:
+
+- `TOT_DEPTH` – default max search depth when `--depth` is omitted (positive integer)
+- `TOT_BREADTH` – default number of branches per level when `--breadth` is omitted (positive integer)
+
+Invalid values are ignored unless `--agent tot` is used.
 
 ## Configuring Logging
 
