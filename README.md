@@ -45,6 +45,12 @@ Run the GUI with Python:
 python -m src.ui.main
 ```
 
+On Windows you can also start the application with the included batch file:
+
+```batch
+run_gui.bat
+```
+
 The window should open allowing you to chat with the model and upload supported files.
 
 ## Running Tests
