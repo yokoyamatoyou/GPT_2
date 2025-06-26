@@ -55,13 +55,21 @@ The window should open allowing you to chat with the model and upload supported 
 
 ### 5. Install diagram tools
 
-The optional diagram helpers `create_graphviz_diagram` and `create_mermaid_diagram`
-rely on external commands. Make sure `dot` from
-[Graphviz](https://graphviz.org/) and `mmdc` from the
-[Mermaid CLI](https://github.com/mermaid-js/mermaid-cli) are installed and
-available in your `PATH`. On Debian/Ubuntu you can install Graphviz with
-`apt install graphviz` and install the Mermaid CLI using
-`npm install -g @mermaid-js/mermaid-cli`.
+The optional diagram helpers `create_graphviz_diagram` and
+`create_mermaid_diagram` rely on external commands. Install
+`Graphviz` (provides the `dot` command) and the `Mermaid CLI`
+(provides the `mmdc` command) and ensure both are available in your
+`PATH`. On Debian/Ubuntu you can install Graphviz with:
+
+```bash
+apt install graphviz
+```
+
+And install the Mermaid CLI globally using npm:
+
+```bash
+npm install -g @mermaid-js/mermaid-cli
+```
 
 ## Running Tests
 
