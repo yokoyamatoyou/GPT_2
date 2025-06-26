@@ -30,9 +30,11 @@ cp .env.example .env
 echo "OPENAI_API_KEY=your_key_here" >> .env
 ```
 
-`create_llm` reads additional variables if present:
+-`create_llm` reads additional variables if present:
 
-- `OPENAI_MODEL` – default model to use (defaults to `gpt-3.5-turbo`)
+- `OPENAI_MODEL` – default model to use (defaults to `gpt-3.5-turbo`).
+  The GUI also uses this value as the initial model selection and includes
+  `gpt-3.5-turbo` in the drop-down menu.
 - `OPENAI_TOKEN_PRICE` – price per token for usage cost logging
 
 ### 4. Launch the application
