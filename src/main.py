@@ -143,11 +143,20 @@ def main(argv: list[str] | None = None) -> None:
         agent = ReActAgent(llm, tools, memory, verbose=args.verbose)
     else:
         evaluator = create_evaluator(llm)
+        memory = VectorMemory() if args.memory == "vector" else ConversationMemory()
+        if args.memory_file and os.path.exists(args.memory_file):
+            try:
+                memory.load(args.memory_file)
+            except Exception as exc:
+                logger.warning(
+                    "Failed to load memory file %s: %s", args.memory_file, exc
+                )
         agent = ToTAgent(
             llm,
             evaluator,
             max_depth=args.depth,
             breadth=args.breadth,
+            memory=memory,
         )
 
     print("Enter an empty line to quit.")

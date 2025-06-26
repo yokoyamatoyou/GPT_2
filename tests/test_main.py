@@ -101,7 +101,7 @@ def test_main_uses_tot_agent(monkeypatch):
     created = {}
 
     class DummyTot:
-        def __init__(self, llm, evaluate, *, max_depth, breadth):
+        def __init__(self, llm, evaluate, *, max_depth, breadth, memory=None):
             created['called'] = True
             created['depth'] = max_depth
             created['breadth'] = breadth
@@ -120,6 +120,44 @@ def test_main_uses_tot_agent(monkeypatch):
     assert created.get('called', False)
     assert created['depth'] == 3
     assert created['breadth'] == 4
+
+
+def test_main_tot_loads_and_saves_memory(tmp_path, monkeypatch):
+    mem_file = tmp_path / 'mem.json'
+    mem_file.write_text('{"messages": []}', encoding='utf-8')
+
+    loaded = {'val': False}
+    saved = {'val': False}
+
+    class DummyMemory(src_main.ConversationMemory):
+        def load(self, path: str) -> None:
+            loaded['val'] = True
+            super().load(path)
+
+        def save(self, path: str) -> None:
+            saved['val'] = True
+            super().save(path)
+
+    class DummyTot:
+        def __init__(self, llm, evaluate, *, max_depth, breadth, memory=None):
+            self.memory = memory
+
+        def run(self, q):
+            return 'ok'
+
+    monkeypatch.setattr(src_main, 'ToTAgent', DummyTot)
+    monkeypatch.setattr(src_main, 'create_llm', lambda log_usage=True: lambda p: 'x')
+    monkeypatch.setattr(src_main, 'create_evaluator', lambda llm: lambda h: 1.0)
+    monkeypatch.setattr(src_main, 'setup_logging', lambda **k: None)
+    monkeypatch.setattr(src_main, 'ConversationMemory', DummyMemory)
+    monkeypatch.setattr(src_main, 'VectorMemory', DummyMemory)
+    monkeypatch.setattr('builtins.input', lambda prompt='': '')
+    monkeypatch.setattr('builtins.print', lambda *a, **k: None)
+
+    src_main.main(['--agent', 'tot', '--memory-file', str(mem_file)])
+
+    assert loaded['val']
+    assert saved['val']
 
 
 def test_main_passes_log_file(monkeypatch):
