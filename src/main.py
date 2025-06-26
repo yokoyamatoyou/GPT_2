@@ -110,12 +110,18 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
         "--log-file",
         help="Write logs to the specified file (overrides AGENT_LOG_FILE)",
     )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Enable debug logging and verbose agent output",
+    )
     return parser.parse_args(args)
 
 
 def main(argv: list[str] | None = None) -> None:
     args = parse_args(argv)
-    setup_logging(log_file=args.log_file)
+    level = logging.DEBUG if args.verbose else logging.INFO
+    setup_logging(level=level, log_file=args.log_file)
     llm = create_llm(log_usage=True)
     memory = None
     tools = None
@@ -129,7 +135,7 @@ def main(argv: list[str] | None = None) -> None:
                     "Failed to load memory file %s: %s", args.memory_file, exc
                 )
         tools = [get_web_scraper(), get_sqlite_tool()]
-        agent = ReActAgent(llm, tools, memory)
+        agent = ReActAgent(llm, tools, memory, verbose=args.verbose)
     else:
         evaluator = create_evaluator(llm)
         agent = ToTAgent(
