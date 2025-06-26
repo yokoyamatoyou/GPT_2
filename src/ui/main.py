@@ -13,6 +13,8 @@ import PyPDF2
 import openpyxl
 import base64
 from dotenv import load_dotenv
+from src.tools.graphviz_tool import create_graphviz_diagram
+from src.tools.mermaid_tool import create_mermaid_diagram
 
 # Load environment variables from .env if present
 load_dotenv()
@@ -53,6 +55,40 @@ class ChatGPTClient:
         self.current_title = None
         self.uploaded_files = []
         self.response_queue = queue.Queue()
+        self.tools = [
+            {
+                "type": "function",
+                "function": {
+                    "name": "create_graphviz_diagram",
+                    "description": "DOT言語から図を生成する。フローチャート等に適している。",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "code": {"type": "string", "description": "DOT言語のコード"}
+                        },
+                        "required": ["code"],
+                    },
+                },
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "create_mermaid_diagram",
+                    "description": "Mermaid markdown-like codeから図を生成する。シーケンス図、ガントチャート等に適している。",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "code": {"type": "string", "description": "Mermaid記法のコード"}
+                        },
+                        "required": ["code"],
+                    },
+                },
+            },
+        ]
+        self.tool_funcs = {
+            "create_graphviz_diagram": create_graphviz_diagram,
+            "create_mermaid_diagram": create_mermaid_diagram,
+        }
         
         # UI要素の作成
         self.setup_ui()
@@ -272,6 +308,14 @@ class ChatGPTClient:
         # 今回の修正はモデル名の変更のみに留め、このロジックは変更しません。
 
         content_parts = [{"type": "text", "text": user_message}]
+
+        if not self.messages:
+            system_prompt = (
+                "あなたは優秀なAIアシスタントです。ユーザーの質問が曖昧だと判断した場合、"
+                "通常の回答の後に『【プロンプトアドバイス】』という見出しを付け、より具体的な質問の例を2〜3個提示してください。"
+                "例: 『ラーメンについて教えて』→『東京でおすすめの醤油ラーメンのお店は？』"
+            )
+            self.messages.append({"role": "system", "content": system_prompt})
         
         if self.uploaded_files:
             file_info_text = "\n\n【アップロードされたファイル情報】\n"
@@ -301,7 +345,8 @@ class ChatGPTClient:
         self.messages.append({"role": "user", "content": content_parts})
         
         # 初回メッセージの場合、タイトルを生成
-        if len(self.messages) == 1:
+        user_count = sum(1 for m in self.messages if m.get("role") == "user")
+        if user_count == 1:
             self.generate_title(user_message)
         
         # 別スレッドで応答を取得しキューに書き込む
@@ -317,12 +362,16 @@ class ChatGPTClient:
             # 現在のself.messagesのcontentは、send_messageで構築されたcontent_partsを想定
             messages_for_api = self.messages 
 
-            stream = self.client.chat.completions.create(
-                model=self.model_var.get(),
-                messages=messages_for_api,
-                temperature=self.temp_slider.get(),
-                stream=True
-            )
+            params = {
+                "model": self.model_var.get(),
+                "messages": messages_for_api,
+                "temperature": self.temp_slider.get(),
+                "stream": True,
+            }
+            if getattr(self, "tools", None):
+                params["tools"] = self.tools
+                params["tool_choice"] = "auto"
+            stream = self.client.chat.completions.create(**params)
             
             for chunk in stream:
                 if chunk.choices[0].delta.content is not None:

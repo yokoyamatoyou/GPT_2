@@ -11,6 +11,16 @@
 
 この2部構成のアプローチは、戦略的な整合性を確保しつつ、戦術的な実行の精度を高めるためのベストプラクティスです。戦略と実行を明確に分離することで、開発チームは具体的なコーディング作業に集中でき、プロジェクトマネージャーや技術リーダーは全体像の把握と進捗管理を効率的に行うことが可能となります。本ドキュメントが、単なる計画書としてだけでなく、開発チームにとって実践的かつ再利用可能な技術資産となることを目的としています。
 
+## Codex Instructions
+
+The repository implements a GUI application for ChatGPT using CustomTkinter.
+When modifying this project, keep the following behaviors in mind:
+1. Diagram generation tools `create_graphviz_diagram` and `create_mermaid_diagram` convert DOT or Mermaid code to PNG using external CLI commands.
+2. `ChatGPTClient` exposes these tools via the OpenAI tools API and streams tokens with `stream=True`.
+3. On the first user message, a system prompt instructs the assistant to append prompt advice if the query is vague.
+
+Document further changes to these features in this section so future Codex sessions remain aware of the expected behavior.
+
 ---
 
 ## **パートI：戦略的ブループリントとアーキテクチャの展望（計画）**
