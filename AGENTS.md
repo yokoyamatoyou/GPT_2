@@ -20,6 +20,8 @@ When modifying this project, keep the following behaviors in mind:
 3. On the first user message, a system prompt instructs the assistant to append prompt advice if the query is vague.
 4. `create_llm` reads an optional `OPENAI_TIMEOUT` environment variable and passes it
    as the request timeout when calling the OpenAI API.
+5. `setup_logging` checks the `AGENT_LOG_FILE` environment variable to choose a
+   default file for log output.
 
 Document further changes to these features in this section so future Codex sessions remain aware of the expected behavior.
 
@@ -191,6 +193,7 @@ api\_key \= os.getenv("OPENAI\_API\_KEY")
 エージェントの振る舞い、ツール呼び出し、エラーを追跡するための基本的なロギング設定を行います。これは、多くのエージェントフレームワークで見られるverbose=Trueのような詳細な出力を実現するために不可欠です 14。Pythonの標準ライブラリである
 
 loggingモジュールを使用し、ログレベル（INFO, DEBUG, ERROR）を設定して、コンソールやファイルに出力できるようにします。
+- `AGENT_LOG_FILE` — `setup_logging` が環境変数から読み込むログ出力先のパスを指定できます。
 
 ### **2.2 フェーズ2：コアReActエージェントループの実装**
 
