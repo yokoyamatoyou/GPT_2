@@ -7,6 +7,21 @@ import queue
 
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
+import tkinter
+
+
+def get_font_family(preferred: str = "Meiryo") -> str:
+    """Return preferred font if available else fall back to a standard family."""
+    try:
+        root = tkinter.Tk()
+        root.withdraw()
+        families = set(root.tk.call("font", "families"))
+        root.destroy()
+        if preferred in families:
+            return preferred
+    except tkinter.TclError:
+        pass
+    return "Helvetica"
 from openai import OpenAI
 import docx
 import PyPDF2
@@ -27,6 +42,8 @@ logging.basicConfig(
 # CustomTkinterの設定
 ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("blue")
+
+FONT_FAMILY = get_font_family()
 
 class ChatGPTClient:
     def __init__(self):
@@ -55,6 +72,7 @@ class ChatGPTClient:
         self.current_title = None
         self.uploaded_files = []
         self.response_queue = queue.Queue()
+        self.assistant_start = None
         self.tools = [
             {
                 "type": "function",
@@ -106,13 +124,13 @@ class ChatGPTClient:
         left_panel.pack_propagate(False)
         
         # 設定タイトル
-        settings_label = ctk.CTkLabel(left_panel, text="設定", 
-                                     font=("SF Pro Display", 20, "bold"))
+        settings_label = ctk.CTkLabel(left_panel, text="設定",
+                                     font=(FONT_FAMILY, 22, "bold"))
         settings_label.pack(pady=20)
         
         # モデル選択
-        model_label = ctk.CTkLabel(left_panel, text="モデル", 
-                                  font=("SF Pro Display", 14))
+        model_label = ctk.CTkLabel(left_panel, text="モデル",
+                                  font=(FONT_FAMILY, 16))
         model_label.pack(pady=(20, 5))
         
         model_menu = ctk.CTkOptionMenu(
@@ -129,8 +147,8 @@ class ChatGPTClient:
         model_menu.pack(pady=(0, 20))
         
         # 温度設定
-        temp_label = ctk.CTkLabel(left_panel, text="Temperature: 0.7", 
-                                 font=("SF Pro Display", 14))
+        temp_label = ctk.CTkLabel(left_panel, text="Temperature: 0.7",
+                                 font=(FONT_FAMILY, 16))
         temp_label.pack(pady=(20, 5))
         
         self.temp_slider = ctk.CTkSlider(left_panel, from_=0, to=2, number_of_steps=20,
@@ -139,30 +157,30 @@ class ChatGPTClient:
         self.temp_slider.pack(pady=(0, 20))
         
         # ファイルアップロードボタン
-        upload_btn = ctk.CTkButton(left_panel, text="ファイルをアップロード", 
+        upload_btn = ctk.CTkButton(left_panel, text="ファイルをアップロード",
                                   command=self.upload_file,
-                                  font=("SF Pro Display", 14))
+                                  font=(FONT_FAMILY, 16))
         upload_btn.pack(pady=10)
         
         # アップロードされたファイルリスト
-        self.file_list_label = ctk.CTkLabel(left_panel, text="アップロードされたファイル:", 
-                                           font=("SF Pro Display", 12))
+        self.file_list_label = ctk.CTkLabel(left_panel, text="アップロードされたファイル:",
+                                           font=(FONT_FAMILY, 14))
         self.file_list_label.pack(pady=(20, 5))
         
         self.file_list_text = ctk.CTkTextbox(left_panel, height=100, width=250)
         self.file_list_text.pack(pady=(0, 20))
         
         # 新しい会話ボタン
-        new_chat_btn = ctk.CTkButton(left_panel, text="新しい会話", 
+        new_chat_btn = ctk.CTkButton(left_panel, text="新しい会話",
                                     command=self.new_chat,
-                                    font=("SF Pro Display", 14))
+                                    font=(FONT_FAMILY, 16))
         new_chat_btn.pack(pady=10)
 
         load_chat_btn = ctk.CTkButton(
             left_panel,
             text="会話を読み込み",
             command=self.load_chat,
-            font=("SF Pro Display", 14),
+            font=(FONT_FAMILY, 16),
         )
         load_chat_btn.pack(pady=10)
         
@@ -171,22 +189,24 @@ class ChatGPTClient:
         right_panel.pack(side="right", fill="both", expand=True)
         
         # チャットエリア
-        self.chat_display = ctk.CTkTextbox(right_panel, font=("SF Pro Text", 14),
+        self.chat_display = ctk.CTkTextbox(right_panel, font=(FONT_FAMILY, 16),
                                           wrap="word", fg_color="#f8f8f8")
         self.chat_display.pack(fill="both", expand=True, padx=20, pady=(20, 10))
+        self.chat_display.tag_config("user_msg", background="#e6f7ff")
+        self.chat_display.tag_config("assistant_msg", background="#f5f5f5")
         
         # 入力エリア
         input_frame = ctk.CTkFrame(right_panel, fg_color="transparent")
         input_frame.pack(fill="x", padx=20, pady=(0, 20))
         
         self.input_field = ctk.CTkEntry(input_frame, placeholder_text="メッセージを入力...",
-                                       font=("SF Pro Text", 14), height=40)
+                                       font=(FONT_FAMILY, 16), height=40)
         self.input_field.pack(side="left", fill="x", expand=True, padx=(0, 10))
         self.input_field.bind("<Return>", lambda e: self.send_message())
         
         send_btn = ctk.CTkButton(input_frame, text="送信", width=80,
                                 command=self.send_message,
-                                font=("SF Pro Display", 14))
+                                font=(FONT_FAMILY, 16))
         send_btn.pack(side="right")
         
     def upload_file(self):
@@ -291,7 +311,11 @@ class ChatGPTClient:
         
         # ユーザーメッセージを表示
         self.chat_display.configure(state="normal")
+        start = self.chat_display.index("end") if hasattr(self.chat_display, "index") else None
         self.chat_display.insert("end", f"\n👤 You: {user_message}\n\n")
+        if start is not None and hasattr(self.chat_display, "tag_add"):
+            end = self.chat_display.index("end")
+            self.chat_display.tag_add("user_msg", start, end)
         self.chat_display.see("end")
         self.chat_display.configure(state="disabled")
         
@@ -500,7 +524,12 @@ class ChatGPTClient:
                 # content may be structured as list of parts
                 content = "".join(part.get("text", "") for part in content)
             prefix = "👤 You" if role == "user" else "🤖 Assistant"
+            start = self.chat_display.index("end") if hasattr(self.chat_display, "index") else None
             self.chat_display.insert("end", f"\n{prefix}: {content}\n\n")
+            if start is not None and hasattr(self.chat_display, "tag_add"):
+                end = self.chat_display.index("end")
+                tag = "user_msg" if role == "user" else "assistant_msg"
+                self.chat_display.tag_add(tag, start, end)
         self.chat_display.configure(state="disabled")
 
     def process_queue(self):
@@ -512,7 +541,15 @@ class ChatGPTClient:
                     self.save_conversation()
                     continue
                 self.chat_display.configure(state="normal")
-                self.chat_display.insert("end", item)
+                if item.startswith("🤖 Assistant: "):
+                    self.assistant_start = self.chat_display.index("end") if hasattr(self.chat_display, "index") else None
+                    self.chat_display.insert("end", item)
+                else:
+                    self.chat_display.insert("end", item)
+                if self.assistant_start is not None and item.endswith("\n") and hasattr(self.chat_display, "tag_add"):
+                    end = self.chat_display.index("end")
+                    self.chat_display.tag_add("assistant_msg", self.assistant_start, end)
+                    self.assistant_start = None
                 self.chat_display.see("end")
                 self.chat_display.configure(state="disabled")
         except queue.Empty:
