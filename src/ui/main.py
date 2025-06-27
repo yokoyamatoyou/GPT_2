@@ -227,8 +227,8 @@ class ChatGPTClient:
         self.chat_display = ctk.CTkTextbox(right_panel, font=(FONT_FAMILY, 16),
                                           wrap="word", fg_color="#f8f8f8")
         self.chat_display.pack(fill="both", expand=True, padx=20, pady=(20, 10))
-        self.chat_display.tag_config("user_msg", background="#e6f7ff")
-        self.chat_display.tag_config("assistant_msg", background="#f5f5f5")
+        self.chat_display.tag_config("user_msg", background="#E8F0FE")
+        self.chat_display.tag_config("assistant_msg", background="#F1F3F4")
         
         # 入力エリア
         input_frame = ctk.CTkFrame(right_panel, fg_color="transparent")
