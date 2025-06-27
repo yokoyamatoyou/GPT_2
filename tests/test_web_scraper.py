@@ -1,5 +1,6 @@
 from src.tools import web_scraper
 import threading
+import logging
 
 scrape_website_content = web_scraper.scrape_website_content
 
@@ -245,4 +246,21 @@ def test_concurrent_calls(monkeypatch):
     assert all(r == "Hi" for r in results)
     # robots and page should be fetched once each
     assert call_count["n"] == 2
+    web_scraper.load_settings()
+
+
+def test_invalid_settings_fall_back(monkeypatch, caplog):
+    caplog.set_level(logging.WARNING)
+    monkeypatch.setenv("WEB_SCRAPER_CACHE_TTL", "oops")
+    monkeypatch.setenv("WEB_SCRAPER_DELAY", "bad")
+
+    web_scraper.load_settings()
+
+    assert web_scraper._CACHE_TTL == 3600
+    assert web_scraper._DELAY == 1.0
+    assert "Invalid WEB_SCRAPER_CACHE_TTL" in caplog.text
+    assert "Invalid WEB_SCRAPER_DELAY" in caplog.text
+
+    monkeypatch.delenv("WEB_SCRAPER_CACHE_TTL", raising=False)
+    monkeypatch.delenv("WEB_SCRAPER_DELAY", raising=False)
     web_scraper.load_settings()

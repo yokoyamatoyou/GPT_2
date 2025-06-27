@@ -242,6 +242,9 @@ adjust these values with environment variables:
 - `WEB_SCRAPER_DELAY` – delay between HTTP requests in seconds (default `1.0`)
 - `WEB_SCRAPER_USER_AGENT` – value for the `User-Agent` header (default `Mozilla/5.0`)
 
+Invalid `WEB_SCRAPER_CACHE_TTL` or `WEB_SCRAPER_DELAY` values are ignored. A
+warning is logged and the defaults (`3600` and `1.0`) are used.
+
 Example:
 
 ```bash
