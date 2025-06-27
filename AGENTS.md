@@ -29,6 +29,8 @@ When modifying this project, keep the following behaviors in mind:
 9. The chat display configures tags `user_msg` (light blue background) and `assistant_msg` (light gray). Incoming, saved and streamed messages are tagged accordingly so each role shows a distinct background color.
 10. Diagram images are generated as PNG files but the GUI does not define a dedicated area to display them; the file path is returned as text.
 11. Future updates may add a right-hand sidebar \(or canvas-like panel\) to preview diagrams as they are generated and offer a download link for the PNG file.
+12. The application now includes such a sidebar. When an assistant response contains the path to a PNG file it is automatically loaded and shown in a small preview panel on the right with a "保存" button that lets users choose where to save the image.
+13. A "会話を保存" button in the settings panel lets users manually save the current conversation to the default `conversations` folder. Saving also happens automatically after every assistant response.
 
 Document further changes to these features in this section so future Codex sessions remain aware of the expected behavior.
 
