@@ -499,8 +499,8 @@ class ChatGPTClient:
             self.current_title = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
             self.window.title(f"ChatGPT Desktop - {self.current_title}")  # エラー時もタイトル設定
     
-    def save_conversation(self):
-        """会話をJSONファイルとして保存"""
+    def save_conversation(self, show_popup: bool = True):
+        """会話をJSONファイルとして保存."""
         if not self.current_title:
             return
         
@@ -532,12 +532,16 @@ class ChatGPTClient:
         try:
             with open(filename, 'w', encoding='utf-8') as f:
                 json.dump(conversation_data, f, ensure_ascii=False, indent=2)
-            try:
-                messagebox.showinfo("保存完了", f"会話を {filename} に保存しました")
-            except tkinter.TclError:
-                pass
+            if show_popup:
+                try:
+                    messagebox.showinfo("保存完了", f"会話を {filename} に保存しました")
+                except tkinter.TclError:
+                    pass
         except Exception as e:
-            messagebox.showerror("保存エラー", f"会話の保存に失敗しました: {str(e)}")
+            if show_popup:
+                messagebox.showerror("保存エラー", f"会話の保存に失敗しました: {str(e)}")
+            else:
+                logging.error("会話の保存に失敗しました: %s", e)
 
     
     def new_chat(self):
@@ -634,7 +638,7 @@ class ChatGPTClient:
                     self.display_diagram(item[len("__DIAGRAM__"):])
                     continue
                 if item == "__SAVE__":
-                    self.save_conversation()
+                    self.save_conversation(show_popup=False)
                     continue
                 self.chat_display.configure(state="normal")
                 if item.startswith("🤖 Assistant: "):
