@@ -4,10 +4,13 @@ import datetime
 import threading
 import logging
 import queue
+import re
+import shutil
 
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
 import tkinter
+from PIL import Image
 
 
 def get_font_family(preferred: str = "Meiryo") -> str:
@@ -73,6 +76,7 @@ class ChatGPTClient:
         self.uploaded_files = []
         self.response_queue = queue.Queue()
         self.assistant_start = None
+        self._diagram_path: str | None = None
         self.tools = [
             {
                 "type": "function",
@@ -183,7 +187,32 @@ class ChatGPTClient:
             font=(FONT_FAMILY, 16),
         )
         load_chat_btn.pack(pady=10)
+
+        save_chat_btn = ctk.CTkButton(
+            left_panel,
+            text="会話を保存",
+            command=self.save_conversation,
+            font=(FONT_FAMILY, 16),
+        )
+        save_chat_btn.pack(pady=10)
         
+        # 右側パネル（図プレビュー）
+        self.diagram_panel = ctk.CTkFrame(main_container, width=250, fg_color="#f9f9f9")
+        self.diagram_panel.pack(side="right", fill="y")
+        self.diagram_panel.pack_propagate(False)
+
+        self.diagram_label = ctk.CTkLabel(self.diagram_panel, text="図のプレビュー", font=(FONT_FAMILY, 16))
+        self.diagram_label.pack(padx=10, pady=10)
+
+        self.save_button = ctk.CTkButton(
+            self.diagram_panel,
+            text="保存",
+            command=lambda: self.save_diagram(),
+            font=(FONT_FAMILY, 14),
+            state="disabled",
+        )
+        self.save_button.pack(pady=(0, 10))
+
         # 右側パネル（チャット）
         right_panel = ctk.CTkFrame(main_container, fg_color="#ffffff")
         right_panel.pack(side="right", fill="both", expand=True)
@@ -407,6 +436,9 @@ class ChatGPTClient:
             
             # アシスタントの応答を履歴に追加
             self.messages.append({"role": "assistant", "content": response_text})
+            match = re.search(r"(/[^\s]+\.png)", response_text)
+            if match and os.path.isfile(match.group(1)):
+                self.response_queue.put(f"__DIAGRAM__{match.group(1)}")
             self.response_queue.put("__SAVE__")
             
         except Exception as e:
@@ -467,6 +499,10 @@ class ChatGPTClient:
         try:
             with open(filename, 'w', encoding='utf-8') as f:
                 json.dump(conversation_data, f, ensure_ascii=False, indent=2)
+            try:
+                messagebox.showinfo("保存完了", f"会話を {filename} に保存しました")
+            except tkinter.TclError:
+                pass
         except Exception as e:
             messagebox.showerror("保存エラー", f"会話の保存に失敗しました: {str(e)}")
 
@@ -532,11 +568,38 @@ class ChatGPTClient:
                 self.chat_display.tag_add(tag, start, end)
         self.chat_display.configure(state="disabled")
 
+    def display_diagram(self, path: str) -> None:
+        """Preview a diagram PNG and enable saving."""
+        try:
+            img = Image.open(path)
+            preview = ctk.CTkImage(light_image=img, size=(200, 200))
+        except Exception:
+            logging.exception("Failed to load diagram %s", path)
+            return
+        self.diagram_label.configure(image=preview, text="")
+        self.diagram_label.image = preview
+        self.save_button.configure(state="normal")
+        self._diagram_path = path
+
+    def save_diagram(self) -> None:
+        """Save the currently previewed diagram to a location chosen by the user."""
+        if not getattr(self, "_diagram_path", None):
+            return
+        dest = filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("PNG", "*.png")])
+        if dest:
+            try:
+                shutil.copy(self._diagram_path, dest)
+            except Exception as exc:
+                messagebox.showerror("保存エラー", str(exc))
+
     def process_queue(self):
         """キューからのメッセージをGUIに反映"""
         try:
             while True:
                 item = self.response_queue.get_nowait()
+                if item.startswith("__DIAGRAM__"):
+                    self.display_diagram(item[len("__DIAGRAM__"):])
+                    continue
                 if item == "__SAVE__":
                     self.save_conversation()
                     continue
