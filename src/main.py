@@ -41,7 +41,7 @@ def _read_tot_env() -> tuple[int | None, int | None]:
     return depth_val, breadth_val
 
 
-def create_llm(*, log_usage: bool = False) -> callable:
+def create_llm(*, log_usage: bool = False, model: str | None = None) -> callable:
     """Create an OpenAI completion callable.
 
     Parameters
@@ -54,7 +54,7 @@ def create_llm(*, log_usage: bool = False) -> callable:
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise RuntimeError("OPENAI_API_KEY not set")
-    model = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
+    model = model or os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
     token_price = float(os.getenv("OPENAI_TOKEN_PRICE", "0"))
     timeout = float(os.getenv("OPENAI_TIMEOUT", "0")) or None
     client = OpenAI(api_key=api_key)
@@ -151,6 +151,10 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="List available tools and exit",
     )
+    parser.add_argument(
+        "--model",
+        help="OpenAI model name to use (overrides OPENAI_MODEL)",
+    )
     parsed = parser.parse_args(args)
 
     arg_list = args if args is not None else sys.argv[1:]
@@ -176,7 +180,7 @@ def main(argv: list[str] | None = None) -> None:
         for t in get_default_tools():
             print(f"{t.name}: {t.description}")
         return
-    llm = create_llm(log_usage=True)
+    llm = create_llm(log_usage=True, model=args.model)
     memory = None
     tools = None
     if args.agent == "react":

@@ -28,6 +28,10 @@ def test_parse_args_list_tools():
     args = src_main.parse_args(['--list-tools'])
     assert args.list_tools
 
+def test_parse_args_model():
+    args = src_main.parse_args(['--model', 'gpt-4'])
+    assert args.model == 'gpt-4'
+
 def test_parse_args_tot_options():
     args = src_main.parse_args(['--agent', 'tot', '--depth', '5', '--breadth', '6'])
     assert args.agent == 'tot'
@@ -82,7 +86,7 @@ def test_main_uses_vector_memory(monkeypatch):
             return 'ok'
 
     monkeypatch.setattr(src_main, 'ReActAgent', DummyAgent)
-    monkeypatch.setattr(src_main, 'create_llm', lambda log_usage=True: lambda p: 'x')
+    monkeypatch.setattr(src_main, 'create_llm', lambda log_usage=True, model=None: lambda p: 'x')
     monkeypatch.setattr(src_main, 'setup_logging', lambda **k: None)
     monkeypatch.setattr(src_main, 'get_default_tools', lambda: [None, None])
     monkeypatch.setattr('builtins.input', lambda prompt='': '')
@@ -115,7 +119,7 @@ def test_main_loads_and_saves_memory(tmp_path, monkeypatch):
             return 'ok'
 
     monkeypatch.setattr(src_main, 'ReActAgent', DummyAgent)
-    monkeypatch.setattr(src_main, 'create_llm', lambda log_usage=True: lambda p: 'x')
+    monkeypatch.setattr(src_main, 'create_llm', lambda log_usage=True, model=None: lambda p: 'x')
     monkeypatch.setattr(src_main, 'setup_logging', lambda **k: None)
     monkeypatch.setattr(src_main, 'get_default_tools', lambda: [None, None])
     monkeypatch.setattr(src_main, 'ConversationMemory', DummyMemory)
@@ -141,7 +145,7 @@ def test_main_uses_tot_agent(monkeypatch):
             return 'ok'
 
     monkeypatch.setattr(src_main, 'ToTAgent', DummyTot)
-    monkeypatch.setattr(src_main, 'create_llm', lambda log_usage=True: lambda p: 'x')
+    monkeypatch.setattr(src_main, 'create_llm', lambda log_usage=True, model=None: lambda p: 'x')
     monkeypatch.setattr(src_main, 'create_evaluator', lambda llm: lambda h: 1.0)
     monkeypatch.setattr(src_main, 'setup_logging', lambda **k: None)
     monkeypatch.setattr('builtins.input', lambda prompt='': '')
@@ -178,7 +182,7 @@ def test_main_tot_loads_and_saves_memory(tmp_path, monkeypatch):
             return 'ok'
 
     monkeypatch.setattr(src_main, 'ToTAgent', DummyTot)
-    monkeypatch.setattr(src_main, 'create_llm', lambda log_usage=True: lambda p: 'x')
+    monkeypatch.setattr(src_main, 'create_llm', lambda log_usage=True, model=None: lambda p: 'x')
     monkeypatch.setattr(src_main, 'create_evaluator', lambda llm: lambda h: 1.0)
     monkeypatch.setattr(src_main, 'setup_logging', lambda **k: None)
     monkeypatch.setattr(src_main, 'ConversationMemory', DummyMemory)
@@ -206,7 +210,7 @@ def test_main_passes_log_file(monkeypatch):
         captured['level'] = level
 
     monkeypatch.setattr(src_main, 'ReActAgent', DummyAgent)
-    monkeypatch.setattr(src_main, 'create_llm', lambda log_usage=True: lambda p: 'x')
+    monkeypatch.setattr(src_main, 'create_llm', lambda log_usage=True, model=None: lambda p: 'x')
     monkeypatch.setattr(src_main, 'setup_logging', fake_setup_logging)
     monkeypatch.setattr(src_main, 'get_default_tools', lambda: [None, None])
     monkeypatch.setattr('builtins.input', lambda prompt='': '')
@@ -230,7 +234,7 @@ def test_main_verbose(monkeypatch):
         captured['level'] = level
 
     monkeypatch.setattr(src_main, 'ReActAgent', DummyAgent)
-    monkeypatch.setattr(src_main, 'create_llm', lambda log_usage=True: lambda p: 'x')
+    monkeypatch.setattr(src_main, 'create_llm', lambda log_usage=True, model=None: lambda p: 'x')
     monkeypatch.setattr(src_main, 'setup_logging', fake_setup_logging)
     monkeypatch.setattr(src_main, 'get_default_tools', lambda: [None, None])
     monkeypatch.setattr('builtins.input', lambda prompt='': '')
@@ -254,7 +258,7 @@ def test_main_stream(monkeypatch):
             yield "step2"
 
     monkeypatch.setattr(src_main, 'ReActAgent', DummyAgent)
-    monkeypatch.setattr(src_main, 'create_llm', lambda log_usage=True: lambda p: 'x')
+    monkeypatch.setattr(src_main, 'create_llm', lambda log_usage=True, model=None: lambda p: 'x')
     monkeypatch.setattr(src_main, 'setup_logging', lambda **k: None)
     monkeypatch.setattr(src_main, 'get_default_tools', lambda: [None, None])
 
@@ -276,4 +280,29 @@ def test_main_list_tools(monkeypatch):
 
     assert any('web_scraper' in line for line in out)
     assert any('sqlite_query' in line for line in out)
+
+
+def test_main_passes_model(monkeypatch):
+    captured = {}
+
+    class DummyAgent:
+        def __init__(self, llm, tools, memory, verbose=False):
+            pass
+        def run(self, q):
+            return 'ok'
+
+    def fake_create_llm(log_usage=True, model=None):
+        captured['model'] = model
+        return lambda p: 'x'
+
+    monkeypatch.setattr(src_main, 'ReActAgent', DummyAgent)
+    monkeypatch.setattr(src_main, 'create_llm', fake_create_llm)
+    monkeypatch.setattr(src_main, 'setup_logging', lambda **k: None)
+    monkeypatch.setattr(src_main, 'get_default_tools', lambda: [None, None])
+    monkeypatch.setattr('builtins.input', lambda prompt='': '')
+    monkeypatch.setattr('builtins.print', lambda *a, **k: None)
+
+    src_main.main(['--model', 'gpt-x'])
+
+    assert captured['model'] == 'gpt-x'
 

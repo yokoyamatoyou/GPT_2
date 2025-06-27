@@ -155,6 +155,11 @@ program exits:
 ```bash
 python -m src.main --memory-file chat.json
 ```
+Specify the OpenAI model at runtime with `--model`:
+
+```bash
+python -m src.main --model gpt-4o
+```
 Logs are written to the console by default. Use `--log-file` to also save them
 to a file (or set the `AGENT_LOG_FILE` environment variable):
 
