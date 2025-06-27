@@ -44,7 +44,17 @@ logging.basicConfig(
 
 # CustomTkinterの設定
 ctk.set_appearance_mode("light")
-ctk.set_default_color_theme("blue")
+# load custom theme with Google-inspired palette
+THEME_PATH = os.path.join(os.path.dirname(__file__), "google_theme.json")
+ctk.set_default_color_theme(THEME_PATH)
+
+ACCENT_COLOR = "#1A73E8"
+LEFT_SIDEBAR_BG = "#F1F3F4"
+DIAGRAM_SIDEBAR_BG = "#F8F9FA"
+CHAT_BG = "#FFFFFF"
+USER_MSG_BG = "#E8F0FE"
+ASSISTANT_MSG_BG = "#F1F3F4"
+TEXT_COLOR = "#202124"
 
 FONT_FAMILY = get_font_family()
 
@@ -123,7 +133,7 @@ class ChatGPTClient:
         main_container.pack(fill="both", expand=True, padx=20, pady=20)
         
         # 左側パネル（設定）
-        left_panel = ctk.CTkFrame(main_container, width=300, fg_color="#f0f0f0")
+        left_panel = ctk.CTkFrame(main_container, width=300, fg_color=LEFT_SIDEBAR_BG)
         left_panel.pack(side="left", fill="y", padx=(0, 10))
         left_panel.pack_propagate(False)
         
@@ -197,7 +207,7 @@ class ChatGPTClient:
         save_chat_btn.pack(pady=10)
         
         # 右側パネル（図プレビュー）
-        self.diagram_panel = ctk.CTkFrame(main_container, width=250, fg_color="#f9f9f9")
+        self.diagram_panel = ctk.CTkFrame(main_container, width=250, fg_color=DIAGRAM_SIDEBAR_BG)
         self.diagram_panel.pack(side="right", fill="y")
         self.diagram_panel.pack_propagate(False)
 
@@ -214,15 +224,15 @@ class ChatGPTClient:
         self.save_button.pack(pady=(0, 10))
 
         # 右側パネル（チャット）
-        right_panel = ctk.CTkFrame(main_container, fg_color="#ffffff")
+        right_panel = ctk.CTkFrame(main_container, fg_color=CHAT_BG)
         right_panel.pack(side="right", fill="both", expand=True)
         
         # チャットエリア
         self.chat_display = ctk.CTkTextbox(right_panel, font=(FONT_FAMILY, 16),
-                                          wrap="word", fg_color="#f8f8f8")
+                                          wrap="word", fg_color=CHAT_BG)
         self.chat_display.pack(fill="both", expand=True, padx=20, pady=(20, 10))
-        self.chat_display.tag_config("user_msg", background="#e6f7ff")
-        self.chat_display.tag_config("assistant_msg", background="#f5f5f5")
+        self.chat_display.tag_config("user_msg", background=USER_MSG_BG)
+        self.chat_display.tag_config("assistant_msg", background=ASSISTANT_MSG_BG)
         
         # 入力エリア
         input_frame = ctk.CTkFrame(right_panel, fg_color="transparent")
