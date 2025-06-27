@@ -53,6 +53,7 @@ FONT_FAMILY = get_font_family()
 
 class ChatGPTClient:
     def __init__(self):
+        """Initialize the main window and OpenAI client."""
         self.window = ctk.CTk()
         self.window.title("ChatGPT Desktop")
         self.window.geometry("1200x800")
@@ -125,6 +126,7 @@ class ChatGPTClient:
         self.window.after(100, self.process_queue)
         
     def setup_ui(self):
+        """Build all widgets and configure layout."""
         # メインコンテナ
         main_container = ctk.CTkFrame(self.window, fg_color="transparent")
         main_container.pack(fill="both", expand=True, padx=20, pady=20)
@@ -267,6 +269,7 @@ class ChatGPTClient:
         send_btn.pack(side="right")
         
     def upload_file(self):
+        """Prompt for a file and store its contents."""
         file_path = filedialog.askopenfilename(
             title="ファイルを選択",
             filetypes=[
@@ -359,6 +362,7 @@ class ChatGPTClient:
         self.file_list_text.configure(state="disabled")
     
     def send_message(self):
+        """Handle user input and start fetching a reply."""
         user_message = self.input_field.get().strip()
         if not user_message:
             return
@@ -434,6 +438,7 @@ class ChatGPTClient:
         threading.Thread(target=self.get_response, daemon=True).start()
     
     def get_response(self):
+        """Stream the assistant's reply and push updates to the queue."""
         try:
             self.response_queue.put("🤖 Assistant: ")
             response_text = ""
@@ -648,6 +653,7 @@ class ChatGPTClient:
         self.window.after(100, self.process_queue)
     
     def run(self):
+        """Start the application event loop."""
         # 初期化時にチャット表示とファイルリストをdisabledに
         self.chat_display.configure(state="disabled")
         self.file_list_text.configure(state="disabled")
