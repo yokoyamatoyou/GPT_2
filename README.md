@@ -54,6 +54,10 @@ run_gui.bat
 
 The window should open allowing you to chat with the model and upload supported files.
 
+The application sets its window icon from `src/ui/resources/app_icon.xbm`.
+If you want to use your own image, replace this file with a different XBM
+bitmap or adjust the path in `ChatGPTClient`.
+
 The left settings panel offers controls to:
 
 - Choose the OpenAI model from a drop-down menu
