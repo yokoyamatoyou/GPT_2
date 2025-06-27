@@ -25,6 +25,11 @@ When modifying this project, keep the following behaviors in mind:
 6. The command line runner accepts `--list-tools` to print available tool names
    and descriptions then exit.
 7. `get_default_tools()` returns the built-in tools used by the CLI and tests.
+8. A `get_font_family` helper and `FONT_FAMILY` constant prefer the Meiryo font
+   if installed, falling back to Helvetica. The UI font sizes were increased by
+   about two points and this font is applied across all widgets.
+9. User and assistant messages are tagged when displayed or loaded, giving
+   different background colors for each speaker.
 
 Document further changes to these features in this section so future Codex sessions remain aware of the expected behavior.
 
