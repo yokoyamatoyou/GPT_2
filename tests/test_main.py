@@ -23,6 +23,11 @@ def test_parse_args_stream():
     args = src_main.parse_args(['--stream'])
     assert args.stream
 
+
+def test_parse_args_list_tools():
+    args = src_main.parse_args(['--list-tools'])
+    assert args.list_tools
+
 def test_parse_args_tot_options():
     args = src_main.parse_args(['--agent', 'tot', '--depth', '5', '--breadth', '6'])
     assert args.agent == 'tot'
@@ -79,8 +84,7 @@ def test_main_uses_vector_memory(monkeypatch):
     monkeypatch.setattr(src_main, 'ReActAgent', DummyAgent)
     monkeypatch.setattr(src_main, 'create_llm', lambda log_usage=True: lambda p: 'x')
     monkeypatch.setattr(src_main, 'setup_logging', lambda **k: None)
-    monkeypatch.setattr(src_main, 'get_web_scraper', lambda: None)
-    monkeypatch.setattr(src_main, 'get_sqlite_tool', lambda: None)
+    monkeypatch.setattr(src_main, 'get_default_tools', lambda: [None, None])
     monkeypatch.setattr('builtins.input', lambda prompt='': '')
     monkeypatch.setattr('builtins.print', lambda *a, **k: None)
 
@@ -113,8 +117,7 @@ def test_main_loads_and_saves_memory(tmp_path, monkeypatch):
     monkeypatch.setattr(src_main, 'ReActAgent', DummyAgent)
     monkeypatch.setattr(src_main, 'create_llm', lambda log_usage=True: lambda p: 'x')
     monkeypatch.setattr(src_main, 'setup_logging', lambda **k: None)
-    monkeypatch.setattr(src_main, 'get_web_scraper', lambda: None)
-    monkeypatch.setattr(src_main, 'get_sqlite_tool', lambda: None)
+    monkeypatch.setattr(src_main, 'get_default_tools', lambda: [None, None])
     monkeypatch.setattr(src_main, 'ConversationMemory', DummyMemory)
     monkeypatch.setattr(src_main, 'VectorMemory', DummyMemory)
     monkeypatch.setattr('builtins.input', lambda prompt='': '')
@@ -205,8 +208,7 @@ def test_main_passes_log_file(monkeypatch):
     monkeypatch.setattr(src_main, 'ReActAgent', DummyAgent)
     monkeypatch.setattr(src_main, 'create_llm', lambda log_usage=True: lambda p: 'x')
     monkeypatch.setattr(src_main, 'setup_logging', fake_setup_logging)
-    monkeypatch.setattr(src_main, 'get_web_scraper', lambda: None)
-    monkeypatch.setattr(src_main, 'get_sqlite_tool', lambda: None)
+    monkeypatch.setattr(src_main, 'get_default_tools', lambda: [None, None])
     monkeypatch.setattr('builtins.input', lambda prompt='': '')
     monkeypatch.setattr('builtins.print', lambda *a, **k: None)
 
@@ -230,8 +232,7 @@ def test_main_verbose(monkeypatch):
     monkeypatch.setattr(src_main, 'ReActAgent', DummyAgent)
     monkeypatch.setattr(src_main, 'create_llm', lambda log_usage=True: lambda p: 'x')
     monkeypatch.setattr(src_main, 'setup_logging', fake_setup_logging)
-    monkeypatch.setattr(src_main, 'get_web_scraper', lambda: None)
-    monkeypatch.setattr(src_main, 'get_sqlite_tool', lambda: None)
+    monkeypatch.setattr(src_main, 'get_default_tools', lambda: [None, None])
     monkeypatch.setattr('builtins.input', lambda prompt='': '')
     monkeypatch.setattr('builtins.print', lambda *a, **k: None)
 
@@ -255,8 +256,7 @@ def test_main_stream(monkeypatch):
     monkeypatch.setattr(src_main, 'ReActAgent', DummyAgent)
     monkeypatch.setattr(src_main, 'create_llm', lambda log_usage=True: lambda p: 'x')
     monkeypatch.setattr(src_main, 'setup_logging', lambda **k: None)
-    monkeypatch.setattr(src_main, 'get_web_scraper', lambda: None)
-    monkeypatch.setattr(src_main, 'get_sqlite_tool', lambda: None)
+    monkeypatch.setattr(src_main, 'get_default_tools', lambda: [None, None])
 
     inputs = iter(["hi", ""]) 
     monkeypatch.setattr('builtins.input', lambda prompt='': next(inputs))
@@ -266,4 +266,14 @@ def test_main_stream(monkeypatch):
 
     assert 'step1' in printed
     assert 'step2' in printed
+
+
+def test_main_list_tools(monkeypatch):
+    out = []
+    monkeypatch.setattr('builtins.print', lambda *a, **k: out.append(' '.join(map(str, a))))
+
+    src_main.main(['--list-tools'])
+
+    assert any('web_scraper' in line for line in out)
+    assert any('sqlite_query' in line for line in out)
 

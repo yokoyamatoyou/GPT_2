@@ -10,7 +10,7 @@ from openai import OpenAI
 from .logging_utils import setup_logging
 
 from src.agent import ReActAgent, ToTAgent
-from src.tools import get_web_scraper, get_sqlite_tool
+from src.tools import get_default_tools
 from src.memory import ConversationMemory
 from src.vector_memory import VectorMemory
 
@@ -146,6 +146,11 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="Print intermediate reasoning steps while running",
     )
+    parser.add_argument(
+        "--list-tools",
+        action="store_true",
+        help="List available tools and exit",
+    )
     parsed = parser.parse_args(args)
 
     arg_list = args if args is not None else sys.argv[1:]
@@ -167,6 +172,10 @@ def main(argv: list[str] | None = None) -> None:
     args = parse_args(argv)
     level = logging.DEBUG if args.verbose else logging.INFO
     setup_logging(level=level, log_file=args.log_file)
+    if args.list_tools:
+        for t in get_default_tools():
+            print(f"{t.name}: {t.description}")
+        return
     llm = create_llm(log_usage=True)
     memory = None
     tools = None
@@ -179,7 +188,7 @@ def main(argv: list[str] | None = None) -> None:
                 logger.warning(
                     "Failed to load memory file %s: %s", args.memory_file, exc
                 )
-        tools = [get_web_scraper(), get_sqlite_tool()]
+        tools = get_default_tools()
         agent = ReActAgent(llm, tools, memory, verbose=args.verbose)
     else:
         evaluator = create_evaluator(llm)

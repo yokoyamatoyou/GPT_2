@@ -22,6 +22,9 @@ When modifying this project, keep the following behaviors in mind:
    as the request timeout when calling the OpenAI API.
 5. `setup_logging` checks the `AGENT_LOG_FILE` environment variable to choose a
    default file for log output.
+6. The command line runner accepts `--list-tools` to print available tool names
+   and descriptions then exit.
+7. `get_default_tools()` returns the built-in tools used by the CLI and tests.
 
 Document further changes to these features in this section so future Codex sessions remain aware of the expected behavior.
 

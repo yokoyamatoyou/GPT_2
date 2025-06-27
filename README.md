@@ -156,6 +156,12 @@ Display each reasoning step as it happens with `--stream`:
 python -m src.main --stream
 ```
 
+Show the available tools and exit with `--list-tools`:
+
+```bash
+python -m src.main --list-tools
+```
+
 ## Experimental ToT Agent
 
 The repository also ships with a tiny Tree-of-Thoughts agent. It explores
