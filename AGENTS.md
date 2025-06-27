@@ -25,6 +25,10 @@ When modifying this project, keep the following behaviors in mind:
 6. The command line runner accepts `--list-tools` to print available tool names
    and descriptions then exit.
 7. `get_default_tools()` returns the built-in tools used by the CLI and tests.
+8. `get_font_family` checks available system fonts and prefers the Japanese font "Meiryo" if present. If it is missing the helper falls back to "Helvetica." The resulting `FONT_FAMILY` constant is applied across every CustomTkinter widget so the interface uses larger, consistent fonts.
+9. The chat display configures tags `user_msg` (light blue background) and `assistant_msg` (light gray). Incoming, saved and streamed messages are tagged accordingly so each role shows a distinct background color.
+10. Diagram images are generated as PNG files but the GUI does not define a dedicated area to display them; the file path is returned as text.
+11. Future updates may add a right-hand sidebar \(or canvas-like panel\) to preview diagrams as they are generated and offer a download link for the PNG file.
 
 Document further changes to these features in this section so future Codex sessions remain aware of the expected behavior.
 
