@@ -46,6 +46,8 @@ logging.basicConfig(
 ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("blue")
 
+ICON_PATH = os.path.join(os.path.dirname(__file__), "resources", "app_icon.xbm")
+
 FONT_FAMILY = get_font_family()
 
 class ChatGPTClient:
@@ -53,6 +55,10 @@ class ChatGPTClient:
         self.window = ctk.CTk()
         self.window.title("ChatGPT Desktop")
         self.window.geometry("1200x800")
+        try:
+            self.window.iconbitmap("@" + ICON_PATH)
+        except Exception:
+            logging.warning("Failed to set window icon")
 
         # モデルの初期値を環境変数から読み込む
         default_model = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
