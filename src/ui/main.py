@@ -44,7 +44,8 @@ logging.basicConfig(
 
 # CustomTkinterの設定
 ctk.set_appearance_mode("light")
-ctk.set_default_color_theme("blue")
+GOOGLE_THEME = os.path.join(os.path.dirname(__file__), "resources", "google.json")
+ctk.set_default_color_theme(GOOGLE_THEME)
 
 ICON_PATH = os.path.join(os.path.dirname(__file__), "resources", "app_icon.xbm")
 
@@ -129,7 +130,13 @@ class ChatGPTClient:
         main_container.pack(fill="both", expand=True, padx=20, pady=20)
         
         # 左側パネル（設定）
-        left_panel = ctk.CTkFrame(main_container, width=300, fg_color="#f0f0f0")
+        left_panel = ctk.CTkFrame(
+            main_container,
+            width=300,
+            fg_color="#F1F3F4",
+            corner_radius=8,
+            border_width=0,
+        )
         left_panel.pack(side="left", fill="y", padx=(0, 10))
         left_panel.pack_propagate(False)
         
@@ -203,7 +210,13 @@ class ChatGPTClient:
         save_chat_btn.pack(pady=10)
         
         # 右側パネル（図プレビュー）
-        self.diagram_panel = ctk.CTkFrame(main_container, width=250, fg_color="#f9f9f9")
+        self.diagram_panel = ctk.CTkFrame(
+            main_container,
+            width=250,
+            fg_color="#F8F9FA",
+            corner_radius=8,
+            border_width=0,
+        )
         self.diagram_panel.pack(side="right", fill="y")
         self.diagram_panel.pack_propagate(False)
 
@@ -220,12 +233,21 @@ class ChatGPTClient:
         self.save_button.pack(pady=(0, 10))
 
         # 右側パネル（チャット）
-        right_panel = ctk.CTkFrame(main_container, fg_color="#ffffff")
+        right_panel = ctk.CTkFrame(
+            main_container,
+            fg_color="#FFFFFF",
+            corner_radius=8,
+            border_width=0,
+        )
         right_panel.pack(side="right", fill="both", expand=True)
         
         # チャットエリア
-        self.chat_display = ctk.CTkTextbox(right_panel, font=(FONT_FAMILY, 16),
-                                          wrap="word", fg_color="#f8f8f8")
+        self.chat_display = ctk.CTkTextbox(
+            right_panel,
+            font=(FONT_FAMILY, 16),
+            wrap="word",
+            fg_color="#FFFFFF",
+        )
         self.chat_display.pack(fill="both", expand=True, padx=20, pady=(20, 10))
         self.chat_display.tag_config("user_msg", background="#E8F0FE")
         self.chat_display.tag_config("assistant_msg", background="#F1F3F4")
