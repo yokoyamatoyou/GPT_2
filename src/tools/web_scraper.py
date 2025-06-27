@@ -1,6 +1,7 @@
 from typing import Optional, Dict, Tuple
 import os
 import threading
+import logging
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse, urljoin
@@ -20,12 +21,37 @@ _LOCK = threading.RLock()
 # Default headers for all HTTP requests
 _HEADERS = {"User-Agent": "Mozilla/5.0"}
 
+logger = logging.getLogger(__name__)
+
 
 def load_settings() -> None:
-    """Load configuration from environment variables."""
+    """Load configuration from environment variables.
+
+    Invalid ``WEB_SCRAPER_CACHE_TTL`` or ``WEB_SCRAPER_DELAY`` values fall back
+    to the defaults and trigger a warning.
+    """
+
     global _CACHE_TTL, _DELAY, _HEADERS
-    _CACHE_TTL = int(os.getenv("WEB_SCRAPER_CACHE_TTL", "3600"))
-    _DELAY = float(os.getenv("WEB_SCRAPER_DELAY", "1.0"))
+
+    ttl_str = os.getenv("WEB_SCRAPER_CACHE_TTL", "3600")
+    delay_str = os.getenv("WEB_SCRAPER_DELAY", "1.0")
+
+    try:
+        _CACHE_TTL = int(ttl_str)
+    except ValueError:
+        logger.warning(
+            "Invalid WEB_SCRAPER_CACHE_TTL=%s, using default 3600", ttl_str
+        )
+        _CACHE_TTL = 3600
+
+    try:
+        _DELAY = float(delay_str)
+    except ValueError:
+        logger.warning(
+            "Invalid WEB_SCRAPER_DELAY=%s, using default 1.0", delay_str
+        )
+        _DELAY = 1.0
+
     _HEADERS = {"User-Agent": os.getenv("WEB_SCRAPER_USER_AGENT", "Mozilla/5.0")}
 
 
