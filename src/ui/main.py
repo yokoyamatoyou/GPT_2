@@ -638,7 +638,11 @@ class ChatGPTClient:
                     self.display_diagram(item[len("__DIAGRAM__"):])
                     continue
                 if item == "__SAVE__":
-                    self.save_conversation(show_popup=False)
+                    threading.Thread(
+                        target=self.save_conversation,
+                        kwargs={"show_popup": False},
+                        daemon=True,
+                    ).start()
                     continue
                 self.chat_display.configure(state="normal")
                 if item.startswith("🤖 Assistant: "):
