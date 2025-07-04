@@ -34,7 +34,7 @@ When modifying this project, keep the following behaviors in mind:
 14. The GUI design should adopt a Google-inspired palette and avoid the default `"blue"` theme. Configure a custom theme in `setup_ui()` that uses accent blue `#1A73E8`, left sidebar background `#F1F3F4`, diagram sidebar `#F8F9FA`, and chat area `#FFFFFF`. Text color should remain dark gray `#202124` for readability. Add a geometric window icon via `self.window.iconbitmap()` and adjust widget corner radii and border widths so the interface looks less like stock CustomTkinter.
 
 15. The command line runner accepts `--model` to override the default `OPENAI_MODEL` when creating the LLM.
-16. Automatic conversation saving runs in the background without showing a popup.
+16. Automatic conversation saving runs in a background thread without showing a popup so the UI remains responsive.
 Document further changes to these features in this section so future Codex sessions remain aware of the expected behavior.
 
 ---
