@@ -117,7 +117,7 @@ def test_get_response_tool_calls(monkeypatch):
         ]
 
     client.client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create)))
-    client.tool_funcs = {"create_graphviz_diagram": lambda code: "/tmp/x.png"}
+    monkeypatch.setattr(GPT, "TOOL_FUNCS", {"create_graphviz_diagram": lambda code: "/tmp/x.png"})
     client.tools = [{"type": "function", "function": {"name": "create_graphviz_diagram"}}]
 
     client.get_response()
