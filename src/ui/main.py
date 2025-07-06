@@ -94,6 +94,13 @@ class ChatGPTClient:
         
         self.client = OpenAI(api_key=api_key)
 
+        timeout_str = os.getenv("OPENAI_TIMEOUT", "0")
+        try:
+            self.timeout = float(timeout_str) or None
+        except ValueError:
+            logging.warning("Invalid OPENAI_TIMEOUT=%s, using default", timeout_str)
+            self.timeout = None
+
         # 会話履歴
         self.messages = []
         self.current_title = None
@@ -499,6 +506,9 @@ class ChatGPTClient:
                 if getattr(self, "tools", None):
                     params["tools"] = self.tools
                     params["tool_choice"] = "auto"
+                timeout_val = getattr(self, "timeout", None)
+                if timeout_val is not None:
+                    params["timeout"] = timeout_val
 
                 stream = self.client.chat.completions.create(**params)
                 finish_reason = None
@@ -567,11 +577,15 @@ class ChatGPTClient:
 
     def simple_llm(self, prompt: str) -> str:
         """Call the OpenAI API synchronously and return the message text."""
-        resp = self.client.chat.completions.create(
-            model=self.model_var.get(),
-            messages=[{"role": "user", "content": prompt}],
-            temperature=self.temp_slider.get(),
-        )
+        params = {
+            "model": self.model_var.get(),
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": self.temp_slider.get(),
+        }
+        timeout_val = getattr(self, "timeout", None)
+        if timeout_val is not None:
+            params["timeout"] = timeout_val
+        resp = self.client.chat.completions.create(**params)
         return resp.choices[0].message.content
 
     def run_agent(self, agent_type: str, question: str) -> None:
@@ -605,15 +619,22 @@ class ChatGPTClient:
         """最初のメッセージからタイトルを生成"""
         try:
             # タイトル生成はシンプルなモデルで十分
-            response = self.client.chat.completions.create(
-                model="gpt-3.5-turbo", # タイトル生成用モデルは変更なし
-                messages=[
-                    {"role": "system", "content": "ユーザーのメッセージから、短く簡潔な会話のタイトルを生成してください。20文字以内で。"},
-                    {"role": "user", "content": first_message}
+            params = {
+                "model": "gpt-3.5-turbo",  # タイトル生成用モデルは変更なし
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "ユーザーのメッセージから、短く簡潔な会話のタイトルを生成してください。20文字以内で。",
+                    },
+                    {"role": "user", "content": first_message},
                 ],
-                temperature=0.5,
-                max_tokens=50
-            )
+                "temperature": 0.5,
+                "max_tokens": 50,
+            }
+            timeout_val = getattr(self, "timeout", None)
+            if timeout_val is not None:
+                params["timeout"] = timeout_val
+            response = self.client.chat.completions.create(**params)
             
             self.current_title = response.choices[0].message.content.strip()
             self.window.title(f"ChatGPT Desktop - {self.current_title}")
