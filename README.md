@@ -87,6 +87,7 @@ Install the runtime and development requirements:
 ```bash
 pip install -r requirements.txt -r requirements-dev.txt
 ```
+Make sure `scikit-learn` and `graphviz` are installed as the tests depend on them. Graphviz also requires the Graphviz system package.
 
 Then execute the test suite with:
 
