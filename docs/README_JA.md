@@ -1,0 +1,56 @@
+# GPT_2 日本語ガイド
+
+このドキュメントは、ChatGPT デスクトップアプリケーションの日本語向け説明書です。GUI は [CustomTkinter](https://github.com/TomSchimansky/CustomTkinter) を利用しており、Word や PDF、画像、Excel ファイルをアップロードしてモデルへ渡すことができます。
+
+## 1. 環境構築
+
+1. Python の仮想環境を作成します。
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate  # Windows の場合: .\venv\Scripts\activate
+   ```
+2. 依存ライブラリをインストールします。
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. `.env.example` をコピーして OpenAI API キーを設定します。
+   ```bash
+   cp .env.example .env
+   echo "OPENAI_API_KEY=your_key_here" >> .env
+   ```
+   必要に応じて `OPENAI_MODEL` や `OPENAI_TIMEOUT` などの環境変数も指定できます。
+
+## 2. アプリケーションの起動
+
+以下のコマンドで GUI を起動します。
+```bash
+python -m src.ui.main
+```
+Windows では `run_gui.bat` を利用することもできます。
+
+左の設定パネルではモデル選択や温度の調整、新規会話の開始、過去会話の読み込みなどが行えます。"会話を保存" ボタンで手動保存も可能です。
+
+## 3. ダイアグラム生成
+
+`create_graphviz_diagram` と `create_mermaid_diagram` を使うと、DOT や Mermaid コードから PNG 画像を生成できます。生成されたファイルパスがチャットに表示され、右側のプレビューに画像が読み込まれます。"保存" ボタンで任意の場所へ保存できます。
+
+## 4. コマンドラインツール
+
+`python -m src.main` を実行すると、CLI からエージェント機能を試せます。`--list-tools` で利用可能なツール一覧を表示し、`--model gpt-4o` のようにモデル指定も可能です。実験的な Tree-of-Thoughts エージェントは `--agent tot` オプションで起動できます。
+
+## 5. テスト実行
+
+開発用依存関係を含めてインストール後、`pytest` を実行してテストがすべて成功するか確認します。
+```bash
+pip install -r requirements.txt -r requirements-dev.txt
+pytest
+```
+
+## 6. ファイル配置
+
+- 会話履歴はカレントディレクトリの `conversations` フォルダに保存されます。
+- ダイアグラム画像は一時ディレクトリに出力されます。環境変数 `TMPDIR` などで変更可能です。
+
+## 7. 参考
+
+詳細な仕様や追加設定項目については英語版 README (`README.md`) を参照してください。
