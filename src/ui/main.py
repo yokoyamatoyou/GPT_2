@@ -1,16 +1,16 @@
-import os
-import json
+import base64
 import datetime
-import threading
+import json
 import logging
+import os
 import queue
 import re
 import shutil
-import base64
+import threading
 
 import customtkinter as ctk
-from tkinter import filedialog, messagebox
 import tkinter
+from tkinter import filedialog, messagebox
 from PIL import Image
 import docx
 import PyPDF2
