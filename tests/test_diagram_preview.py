@@ -30,3 +30,22 @@ def test_display_and_clear_diagram(monkeypatch, tmp_path):
     assert client._diagram_path is None
     assert any(k.get('state') == 'disabled' for k in client.calls.get('save', []))
     assert any(k.get('state') == 'disabled' for k in client.calls.get('clear', []))
+
+
+def test_save_diagram(monkeypatch, tmp_path):
+    client = _client()
+    src = tmp_path / "src.png"
+    src.write_bytes(b'x')
+    client._diagram_path = str(src)
+
+    dest = tmp_path / "out.png"
+    monkeypatch.setattr(GPT.filedialog, 'asksaveasfilename', lambda **k: str(dest))
+    monkeypatch.setattr(GPT.shutil, 'copy', lambda s, d: dest.write_bytes(b'y'))
+    info_calls = []
+    monkeypatch.setattr(GPT.messagebox, 'showinfo', lambda *a, **k: info_calls.append(a))
+    monkeypatch.setattr(GPT.messagebox, 'showerror', lambda *a, **k: None)
+
+    client.save_diagram()
+
+    assert dest.exists()
+    assert info_calls
