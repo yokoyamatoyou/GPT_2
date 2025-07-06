@@ -6,11 +6,29 @@ import logging
 import queue
 import re
 import shutil
+import base64
 
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
 import tkinter
 from PIL import Image
+import docx
+import PyPDF2
+import openpyxl
+from dotenv import load_dotenv
+from openai import OpenAI
+
+from src.agent import ReActAgent, ToTAgent, PresentationAgent
+from src.main import create_evaluator
+from src.memory import ConversationMemory
+from src.tools import (
+    get_web_scraper,
+    get_sqlite_tool,
+    get_graphviz_tool,
+    get_mermaid_tool,
+)
+from src.tools.graphviz_tool import create_graphviz_diagram
+from src.tools.mermaid_tool import create_mermaid_diagram
 
 
 def get_font_family(preferred: str = "Meiryo") -> str:
@@ -25,23 +43,6 @@ def get_font_family(preferred: str = "Meiryo") -> str:
     except tkinter.TclError:
         pass
     return "Helvetica"
-from openai import OpenAI
-import docx
-import PyPDF2
-import openpyxl
-import base64
-from dotenv import load_dotenv
-from src.agent import ReActAgent, ToTAgent, PresentationAgent
-from src.main import create_evaluator
-from src.memory import ConversationMemory
-from src.tools import (
-    get_web_scraper,
-    get_sqlite_tool,
-    get_graphviz_tool,
-    get_mermaid_tool,
-)
-from src.tools.graphviz_tool import create_graphviz_diagram
-from src.tools.mermaid_tool import create_mermaid_diagram
 
 # Mapping of tool names to implementation functions
 TOOL_FUNCS = {
