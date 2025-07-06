@@ -21,6 +21,9 @@ class BaseMemory(Protocol):
     def search(self, query: str, top_k: int = 3) -> List[str]:
         ...
 
+    def clear(self) -> None:
+        ...
+
 
 @dataclass
 class MessageMemory:
@@ -45,6 +48,10 @@ class MessageMemory:
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
         self.messages = data.get("messages", [])
+
+    def clear(self) -> None:
+        """Remove all stored messages."""
+        self.messages.clear()
 
 
 @dataclass
