@@ -43,6 +43,12 @@ from src.tools import (
 from src.tools.graphviz_tool import create_graphviz_diagram
 from src.tools.mermaid_tool import create_mermaid_diagram
 
+# Mapping of tool names to implementation functions
+TOOL_FUNCS = {
+    "create_graphviz_diagram": create_graphviz_diagram,
+    "create_mermaid_diagram": create_mermaid_diagram,
+}
+
 # Load environment variables from .env if present
 load_dotenv()
 
@@ -132,10 +138,6 @@ class ChatGPTClient:
                 },
             },
         ]
-        self.tool_funcs = {
-            "create_graphviz_diagram": create_graphviz_diagram,
-            "create_mermaid_diagram": create_mermaid_diagram,
-        }
         
         # UI要素の作成
         self.setup_ui()
@@ -537,7 +539,7 @@ class ChatGPTClient:
                     self.messages.append(assistant_msg)
 
                     for cid, d in tool_data.items():
-                        func = self.tool_funcs.get(d["name"])
+                        func = TOOL_FUNCS.get(d["name"])
                         if func:
                             try:
                                 args = json.loads(d["args"] or "{}")
