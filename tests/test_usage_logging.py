@@ -37,3 +37,13 @@ def test_create_llm_timeout(monkeypatch):
     llm = src_main.create_llm()
     llm("hi")
     assert dummy.last_kwargs.get("timeout") == 5.0
+
+
+def test_create_llm_bad_timeout(monkeypatch):
+    dummy = DummyClient()
+    monkeypatch.setattr(src_main, "OpenAI", lambda api_key: dummy)
+    monkeypatch.setenv("OPENAI_API_KEY", "x")
+    monkeypatch.setenv("OPENAI_TIMEOUT", "oops")
+    llm = src_main.create_llm()
+    llm("hi")
+    assert "timeout" not in dummy.last_kwargs
