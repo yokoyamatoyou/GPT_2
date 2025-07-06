@@ -627,7 +627,14 @@ class ChatGPTClient:
         self.messages = []
         self.current_title = None
         self.uploaded_files = []
-        
+        try:
+            if isinstance(self.memory, ConversationMemory):
+                self.memory = ConversationMemory()
+            elif hasattr(self.memory, "messages"):
+                self.memory.messages.clear()
+        except Exception:
+            logging.warning("Failed to reset memory", exc_info=True)
+
         self.chat_display.configure(state="normal")
         self.chat_display.delete("1.0", "end")
         self.chat_display.insert("1.0", "新しい会話を開始しました。\n")
