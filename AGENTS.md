@@ -30,11 +30,12 @@ When modifying this project, keep the following behaviors in mind:
 10. Diagram images are generated as PNG files but the GUI does not define a dedicated area to display them; the file path is returned as text.
 11. Future updates may add a right-hand sidebar \(or canvas-like panel\) to preview diagrams as they are generated and offer a download link for the PNG file.
 12. The application now includes such a sidebar. When an assistant response contains the path to a PNG file it is automatically loaded and shown in a small preview panel on the right with a "保存" button that lets users choose where to save the image.
-13. A "会話を保存" button in the settings panel lets users manually save the current conversation to the default `conversations` folder. Saving also happens automatically after every assistant response.
-14. The GUI design should adopt a Google-inspired palette and avoid the default `"blue"` theme. Configure a custom theme in `setup_ui()` that uses accent blue `#1A73E8`, left sidebar background `#F1F3F4`, diagram sidebar `#F8F9FA`, and chat area `#FFFFFF`. Text color should remain dark gray `#202124` for readability. Add a geometric window icon via `self.window.iconbitmap()` and adjust widget corner radii and border widths so the interface looks less like stock CustomTkinter.
+13. The sidebar also provides a "クリア" button that removes the preview and disables saving when no image is shown.
+14. A "会話を保存" button in the settings panel lets users manually save the current conversation to the default `conversations` folder. Saving also happens automatically after every assistant response.
+15. The GUI design should adopt a Google-inspired palette and avoid the default `"blue"` theme. Configure a custom theme in `setup_ui()` that uses accent blue `#1A73E8`, left sidebar background `#F1F3F4`, diagram sidebar `#F8F9FA`, and chat area `#FFFFFF`. Text color should remain dark gray `#202124` for readability. Add a geometric window icon via `self.window.iconbitmap()` and adjust widget corner radii and border widths so the interface looks less like stock CustomTkinter.
 
-15. The command line runner accepts `--model` to override the default `OPENAI_MODEL` when creating the LLM.
-16. Automatic conversation saving runs in a background thread without showing a popup so the UI remains responsive.
+16. The command line runner accepts `--model` to override the default `OPENAI_MODEL` when creating the LLM.
+17. Automatic conversation saving runs in a background thread without showing a popup so the UI remains responsive.
 Document further changes to these features in this section so future Codex sessions remain aware of the expected behavior.
 
 ---

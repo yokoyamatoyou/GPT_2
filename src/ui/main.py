@@ -263,6 +263,15 @@ class ChatGPTClient:
         )
         self.save_button.pack(pady=(0, 10))
 
+        self.clear_button = ctk.CTkButton(
+            self.diagram_panel,
+            text="クリア",
+            command=lambda: self.clear_diagram(),
+            font=(FONT_FAMILY, 14),
+            state="disabled",
+        )
+        self.clear_button.pack(pady=(0, 10))
+
         # 右側パネル（チャット）
         right_panel = ctk.CTkFrame(
             main_container,
@@ -685,6 +694,7 @@ class ChatGPTClient:
         self.diagram_label.configure(image=preview, text="")
         self.diagram_label.image = preview
         self.save_button.configure(state="normal")
+        self.clear_button.configure(state="normal")
         self._diagram_path = path
 
     def save_diagram(self) -> None:
@@ -697,6 +707,14 @@ class ChatGPTClient:
                 shutil.copy(self._diagram_path, dest)
             except Exception as exc:
                 messagebox.showerror("保存エラー", str(exc))
+
+    def clear_diagram(self) -> None:
+        """Remove the current diagram preview and disable related buttons."""
+        self.diagram_label.configure(image=None, text="図のプレビュー")
+        self.diagram_label.image = None
+        self.save_button.configure(state="disabled")
+        self.clear_button.configure(state="disabled")
+        self._diagram_path = None
 
     def process_queue(self):
         """キューからのメッセージをGUIに反映"""
