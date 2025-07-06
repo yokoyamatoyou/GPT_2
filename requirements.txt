@@ -10,3 +10,5 @@ beautifulsoup4
 pydantic
 
 scikit-learn
+graphviz
+mermaid-py

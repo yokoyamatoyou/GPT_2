@@ -16,6 +16,7 @@ def _client():
     c.generate_title = lambda m: None
     c.get_response = lambda: None
     c.response_queue = queue.Queue()
+    c.agent_var = SimpleNamespace(get=lambda: "chatgpt")
     return c
 
 

@@ -65,24 +65,14 @@ The left settings panel offers controls to:
 - Start a new conversation or load a previous one
 - **Save the current conversation** at any time using the "会話を保存" button
 
-### 5. Install diagram tools
+### 5. Install diagram libraries
 
 The optional diagram helpers `create_graphviz_diagram` and
-`create_mermaid_diagram` rely on external CLI programs. `Graphviz`
-provides the `dot` command and the `Mermaid CLI` ships the `mmdc`
-command. Both tools must be installed and available in your `PATH`
-for diagram generation to work. On Debian/Ubuntu you can install
-Graphviz with:
-
-```bash
-apt install graphviz
-```
-
-And install the Mermaid CLI globally using npm:
-
-```bash
-npm install -g @mermaid-js/mermaid-cli
-```
+`create_mermaid_diagram` now use the `graphviz` and `mermaid-py`
+packages to generate PNG files directly from code. No external CLI
+commands are required, but Graphviz must be installed on the system for
+`graphviz` to work and `mermaid-py` contacts the Mermaid Live server to
+render images.
 
 ### Diagram preview sidebar
 
