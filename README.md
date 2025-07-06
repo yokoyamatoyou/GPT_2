@@ -198,6 +198,14 @@ for step in agent.run_iter("質問"):
 
 This implementation is intentionally simple but shows how an LLM can be used in
 a branch-and-bound style search loop.
+
+## Presentation Mode
+
+Select "プレゼンテーション" from the agent drop-down in the GUI to generate
+simple HTML slides. The assistant creates an outline in JSON and the
+application converts it to A4-sized pages with consistent styling and readable
+contrast. The resulting HTML file path is shown in the chat so you can open or
+edit it as needed.
 ## Verbose Logging
 
 Set `verbose=True` when creating `ReActAgent` to enable debug output using Python's `logging` module.
