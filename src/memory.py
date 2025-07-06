@@ -21,9 +21,10 @@ class BaseMemory(Protocol):
     def search(self, query: str, top_k: int = 3) -> List[str]:
         ...
 
+
 @dataclass
-class ConversationMemory:
-    """Simple in-memory store for conversation messages."""
+class MessageMemory:
+    """Common message storage with persistence helpers."""
 
     messages: List[Dict[str, str]] = field(default_factory=list)
 
@@ -44,6 +45,11 @@ class ConversationMemory:
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
         self.messages = data.get("messages", [])
+
+
+@dataclass
+class ConversationMemory(MessageMemory):
+    """Simple in-memory store for conversation messages."""
 
     def search(self, query: str, top_k: int = 3) -> List[str]:
         """Return messages containing the query text."""
