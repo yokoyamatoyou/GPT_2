@@ -31,7 +31,7 @@ import PyPDF2
 import openpyxl
 import base64
 from dotenv import load_dotenv
-from src.agent import ReActAgent, ToTAgent
+from src.agent import ReActAgent, ToTAgent, PresentationAgent
 from src.main import create_evaluator
 from src.memory import ConversationMemory
 from src.tools import (
@@ -198,7 +198,7 @@ class ChatGPTClient:
 
         agent_menu = ctk.CTkOptionMenu(
             left_panel,
-            values=["chatgpt", "react", "tot"],
+            values=["chatgpt", "react", "tot", "プレゼンテーション"],
             variable=self.agent_var,
             width=250,
         )
@@ -525,9 +525,14 @@ class ChatGPTClient:
             self.response_queue.put("🤖 Assistant: ")
             if agent_type == "react":
                 agent = ReActAgent(self.simple_llm, self.agent_tools, self.memory)
-            else:
+            elif agent_type == "tot":
                 evaluator = create_evaluator(self.simple_llm)
                 agent = ToTAgent(self.simple_llm, evaluator, memory=self.memory)
+            elif agent_type == "プレゼンテーション":
+                agent = PresentationAgent(self.simple_llm)
+            else:
+                self.response_queue.put("未対応のエージェントです\n")
+                return
             response_text = ""
             for step in agent.run_iter(question):
                 response_text += step + "\n"
