@@ -480,42 +480,85 @@ class ChatGPTClient:
             threading.Thread(target=self.get_response, daemon=True).start()
     
     def get_response(self):
-        """Stream the assistant's reply and push updates to the queue."""
+        """Stream the assistant's reply, execute tool calls, and push updates."""
         try:
             self.response_queue.put("🤖 Assistant: ")
-            response_text = ""
-            # gpt-4oなどマルチモーダルモデルを正しく使う場合、入力メッセージの形式に注意
-            # self.messages は `[{"role": "user", "content": [{"type": "text", ...}, {"type": "image_url", ...}]}]` の形式
-            
-            # 現在のself.messagesのcontentは、send_messageで構築されたcontent_partsを想定
-            messages_for_api = self.messages 
+            while True:
+                response_text = ""
+                tool_data: dict[str, dict[str, str]] = {}
 
-            params = {
-                "model": self.model_var.get(),
-                "messages": messages_for_api,
-                "temperature": self.temp_slider.get(),
-                "stream": True,
-            }
-            if getattr(self, "tools", None):
-                params["tools"] = self.tools
-                params["tool_choice"] = "auto"
-            stream = self.client.chat.completions.create(**params)
-            
-            for chunk in stream:
-                if chunk.choices[0].delta.content is not None:
-                    content = chunk.choices[0].delta.content
-                    response_text += content
-                    self.response_queue.put(content)
-            
-            self.response_queue.put("\n")
-            
-            # アシスタントの応答を履歴に追加
-            self.messages.append({"role": "assistant", "content": response_text})
-            match = re.search(r"(/[^\s]+\.png)", response_text)
-            if match and os.path.isfile(match.group(1)):
-                self.response_queue.put(f"__DIAGRAM__{match.group(1)}")
-            self.response_queue.put("__SAVE__")
-            
+                params = {
+                    "model": self.model_var.get(),
+                    "messages": self.messages,
+                    "temperature": self.temp_slider.get(),
+                    "stream": True,
+                }
+                if getattr(self, "tools", None):
+                    params["tools"] = self.tools
+                    params["tool_choice"] = "auto"
+
+                stream = self.client.chat.completions.create(**params)
+                finish_reason = None
+
+                for chunk in stream:
+                    choice = chunk.choices[0]
+                    delta = choice.delta
+                    finish_reason = choice.finish_reason
+
+                    if getattr(delta, "content", None) is not None:
+                        content = delta.content
+                        response_text += content
+                        self.response_queue.put(content)
+
+                    calls = getattr(delta, "tool_calls", None)
+                    if calls:
+                        for c in calls:
+                            info = tool_data.setdefault(c.id, {"name": "", "args": ""})
+                            if getattr(c.function, "name", None):
+                                info["name"] = c.function.name
+                            if getattr(c.function, "arguments", None):
+                                info["args"] += c.function.arguments
+
+                self.response_queue.put("\n")
+
+                if tool_data and finish_reason == "tool_calls":
+                    assistant_msg = {
+                        "role": "assistant",
+                        "content": response_text,
+                        "tool_calls": [
+                            {
+                                "id": cid,
+                                "type": "function",
+                                "function": {"name": d["name"], "arguments": d["args"]},
+                            }
+                            for cid, d in tool_data.items()
+                        ],
+                    }
+                    self.messages.append(assistant_msg)
+
+                    for cid, d in tool_data.items():
+                        func = self.tool_funcs.get(d["name"])
+                        if func:
+                            try:
+                                args = json.loads(d["args"] or "{}")
+                                result = func(**args)
+                            except Exception as exc:
+                                result = f"Tool execution failed: {exc}"
+                        else:
+                            result = f"Unknown tool: {d['name']}"
+                        self.messages.append({"role": "tool", "tool_call_id": cid, "content": result})
+
+                    # Continue looping to stream assistant's follow-up answer
+                    continue
+
+                # 通常の応答を保存して終了
+                self.messages.append({"role": "assistant", "content": response_text})
+                match = re.search(r"(/[^\s]+\.png)", response_text)
+                if match and os.path.isfile(match.group(1)):
+                    self.response_queue.put(f"__DIAGRAM__{match.group(1)}")
+                self.response_queue.put("__SAVE__")
+                break
+
         except Exception as e:
             self.response_queue.put(f"\n\nエラー: {str(e)}\n")
 
