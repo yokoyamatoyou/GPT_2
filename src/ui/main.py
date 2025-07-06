@@ -707,6 +707,8 @@ class ChatGPTClient:
                 shutil.copy(self._diagram_path, dest)
             except Exception as exc:
                 messagebox.showerror("保存エラー", str(exc))
+            else:
+                messagebox.showinfo("保存完了", f"図を {dest} に保存しました")
 
     def clear_diagram(self) -> None:
         """Remove the current diagram preview and disable related buttons."""
