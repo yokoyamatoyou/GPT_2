@@ -56,7 +56,12 @@ def create_llm(*, log_usage: bool = False, model: str | None = None) -> callable
         raise RuntimeError("OPENAI_API_KEY not set")
     model = model or os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
     token_price = float(os.getenv("OPENAI_TOKEN_PRICE", "0"))
-    timeout = float(os.getenv("OPENAI_TIMEOUT", "0")) or None
+    timeout_str = os.getenv("OPENAI_TIMEOUT", "0")
+    try:
+        timeout = float(timeout_str) or None
+    except ValueError:
+        logger.warning("Invalid OPENAI_TIMEOUT=%s, using default", timeout_str)
+        timeout = None
     client = OpenAI(api_key=api_key)
 
     def llm(prompt: str) -> str:
