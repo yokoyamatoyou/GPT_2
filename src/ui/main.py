@@ -31,6 +31,15 @@ import PyPDF2
 import openpyxl
 import base64
 from dotenv import load_dotenv
+from src.agent import ReActAgent, ToTAgent
+from src.main import create_evaluator
+from src.memory import ConversationMemory
+from src.tools import (
+    get_web_scraper,
+    get_sqlite_tool,
+    get_graphviz_tool,
+    get_mermaid_tool,
+)
 from src.tools.graphviz_tool import create_graphviz_diagram
 from src.tools.mermaid_tool import create_mermaid_diagram
 
@@ -77,14 +86,22 @@ class ChatGPTClient:
         logging.info("Loaded OpenAI API key from environment")
         
         self.client = OpenAI(api_key=api_key)
-        
+
         # 会話履歴
         self.messages = []
         self.current_title = None
+        self.memory = ConversationMemory()
         self.uploaded_files = []
         self.response_queue = queue.Queue()
         self.assistant_start = None
         self._diagram_path: str | None = None
+        self.agent_var = ctk.StringVar(value="chatgpt")
+        self.agent_tools = [
+            get_web_scraper(),
+            get_sqlite_tool(),
+            get_graphviz_tool(),
+            get_mermaid_tool(),
+        ]
         self.tools = [
             {
                 "type": "function",
@@ -174,6 +191,18 @@ class ChatGPTClient:
                                         command=lambda v: temp_label.configure(text=f"Temperature: {v:.1f}"))
         self.temp_slider.set(0.7)
         self.temp_slider.pack(pady=(0, 20))
+
+        agent_label = ctk.CTkLabel(left_panel, text="エージェント",
+                                   font=(FONT_FAMILY, 16))
+        agent_label.pack(pady=(10, 5))
+
+        agent_menu = ctk.CTkOptionMenu(
+            left_panel,
+            values=["chatgpt", "react", "tot"],
+            variable=self.agent_var,
+            width=250,
+        )
+        agent_menu.pack(pady=(0, 20))
         
         # ファイルアップロードボタン
         upload_btn = ctk.CTkButton(left_panel, text="ファイルをアップロード",
@@ -434,8 +463,12 @@ class ChatGPTClient:
         if user_count == 1:
             self.generate_title(user_message)
         
-        # 別スレッドで応答を取得しキューに書き込む
-        threading.Thread(target=self.get_response, daemon=True).start()
+        # エージェント種別に応じて応答を取得
+        if getattr(self, "agent_var", None) and self.agent_var.get() != "chatgpt":
+            agent_type = self.agent_var.get()
+            threading.Thread(target=self.run_agent, args=(agent_type, user_message), daemon=True).start()
+        else:
+            threading.Thread(target=self.get_response, daemon=True).start()
     
     def get_response(self):
         """Stream the assistant's reply and push updates to the queue."""
@@ -476,6 +509,37 @@ class ChatGPTClient:
             
         except Exception as e:
             self.response_queue.put(f"\n\nエラー: {str(e)}\n")
+
+    def simple_llm(self, prompt: str) -> str:
+        """Call the OpenAI API synchronously and return the message text."""
+        resp = self.client.chat.completions.create(
+            model=self.model_var.get(),
+            messages=[{"role": "user", "content": prompt}],
+            temperature=self.temp_slider.get(),
+        )
+        return resp.choices[0].message.content
+
+    def run_agent(self, agent_type: str, question: str) -> None:
+        """Execute the selected agent and stream steps to the queue."""
+        try:
+            self.response_queue.put("🤖 Assistant: ")
+            if agent_type == "react":
+                agent = ReActAgent(self.simple_llm, self.agent_tools, self.memory)
+            else:
+                evaluator = create_evaluator(self.simple_llm)
+                agent = ToTAgent(self.simple_llm, evaluator, memory=self.memory)
+            response_text = ""
+            for step in agent.run_iter(question):
+                response_text += step + "\n"
+                self.response_queue.put(step + "\n")
+            self.messages.append({"role": "user", "content": question})
+            self.messages.append({"role": "assistant", "content": response_text})
+            match = re.search(r"(/[^\s]+\.png)", response_text)
+            if match and os.path.isfile(match.group(1)):
+                self.response_queue.put(f"__DIAGRAM__{match.group(1)}")
+            self.response_queue.put("__SAVE__")
+        except Exception as exc:
+            self.response_queue.put(f"\n\nエラー: {exc}\n")
     
     def generate_title(self, first_message: str):
         """最初のメッセージからタイトルを生成"""

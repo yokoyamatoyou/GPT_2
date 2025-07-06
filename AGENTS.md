@@ -15,7 +15,7 @@
 
 The repository implements a GUI application for ChatGPT using CustomTkinter.
 When modifying this project, keep the following behaviors in mind:
-1. Diagram generation tools `create_graphviz_diagram` and `create_mermaid_diagram` convert DOT or Mermaid code to PNG using external CLI commands. These features require `Graphviz` (the `dot` command) and the `Mermaid CLI` (`mmdc`) to be installed and accessible in the system `PATH`.
+1. Diagram generation tools `create_graphviz_diagram` and `create_mermaid_diagram` convert DOT or Mermaid code to PNG using Python libraries. `graphviz` renders DOT files and `mermaid-py` sends code to the Mermaid Live server to obtain PNG output, so no external CLI commands are required.
 2. `ChatGPTClient` exposes these tools via the OpenAI tools API and streams tokens with `stream=True`.
 3. On the first user message, a system prompt instructs the assistant to append prompt advice if the query is vague.
 4. `create_llm` reads an optional `OPENAI_TIMEOUT` environment variable and passes it
