@@ -52,7 +52,7 @@ def test_get_response_stream(monkeypatch):
         outputs.append(client.response_queue.get())
 
     assert outputs == [
-        "🤖 Assistant: ",
+        "Assistant: ",
         "Hello",
         " world",
         "\n",
@@ -126,7 +126,7 @@ def test_get_response_tool_calls(monkeypatch):
     while not client.response_queue.empty():
         out.append(client.response_queue.get())
 
-    assert out[0] == "🤖 Assistant: "
+    assert out[0] == "Assistant: "
     assert "done" in "".join(out)
     assert client.messages[1]["role"] == "assistant"
     assert client.messages[2]["role"] == "tool"
