@@ -282,6 +282,12 @@ from src import setup_logging
 setup_logging(level=logging.DEBUG)  # uses AGENT_LOG_FILE if set
 ```
 
+## Packaging for Production
+
+The **prod/** directory contains deployment assets. See
+[prod/README.md](prod/README.md) for instructions on bundling the GUI
+into a single binary with PyInstaller or building a Docker image.
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
