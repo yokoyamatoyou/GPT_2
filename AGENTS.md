@@ -26,7 +26,7 @@ When modifying this project, keep the following behaviors in mind:
    and descriptions then exit.
 7. `get_default_tools()` returns the built-in tools used by the CLI and tests.
 8. `get_font_family` checks available system fonts and prefers the Japanese font "Meiryo" if present. If it is missing the helper falls back to "Helvetica." The resulting `FONT_FAMILY` constant is applied across every CustomTkinter widget so the interface uses larger, consistent fonts.
-9. The chat display configures tags `user_msg` and `assistant_msg` to style each message type. With the Google-style theme, `user_msg` uses a pale accent blue `#E8F0FE` while `assistant_msg` keeps a light gray `#F1F3F4`. Incoming, saved and streamed messages are tagged accordingly so each role shows a distinct background color.
+9. The chat display configures tags `user_msg` and `assistant_msg` to style each message type. `user_msg` now uses a white background `#FFFFFF` while `assistant_msg` keeps a light gray `#F1F3F4`. Incoming, saved and streamed messages are tagged accordingly so each role shows a distinct background color.
 10. Diagram images are generated as PNG files but the GUI does not define a dedicated area to display them; the file path is returned as text.
 11. Future updates may add a right-hand sidebar \(or canvas-like panel\) to preview diagrams as they are generated and offer a download link for the PNG file.
 12. The application now includes such a sidebar. When an assistant response contains the path to a PNG file it is automatically loaded and shown in a small preview panel on the right with a "保存" button that lets users choose where to save the image.
@@ -36,6 +36,7 @@ When modifying this project, keep the following behaviors in mind:
 
 16. The command line runner accepts `--model` to override the default `OPENAI_MODEL` when creating the LLM.
 17. Automatic conversation saving runs in a background thread without showing a popup so the UI remains responsive.
+18. The Tree-of-Thoughts agent streams search steps while running but removes them from the chat once the final answer is produced so only the answer is saved.
 Document further changes to these features in this section so future Codex sessions remain aware of the expected behavior.
 
 ---

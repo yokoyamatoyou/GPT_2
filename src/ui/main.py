@@ -129,6 +129,7 @@ class ChatGPTClient:
         self.uploaded_files = []
         self.response_queue = queue.Queue()
         self.assistant_start = None
+        self.tot_start = None
         self._diagram_path: str | None = None
         self.agent_var = ctk.StringVar(value="chatgpt")
         self.agent_tools = [
@@ -320,7 +321,7 @@ class ChatGPTClient:
             fg_color="#FFFFFF",
         )
         self.chat_display.pack(fill="both", expand=True, padx=20, pady=(20, 10))
-        self.chat_display.tag_config("user_msg", background="#E8F0FE")
+        self.chat_display.tag_config("user_msg", background="#FFFFFF")
         self.chat_display.tag_config("assistant_msg", background="#F1F3F4")
         
         # 入力エリア
@@ -442,7 +443,7 @@ class ChatGPTClient:
         # ユーザーメッセージを表示
         self.chat_display.configure(state="normal")
         start = self.chat_display.index("end") if hasattr(self.chat_display, "index") else None
-        self.chat_display.insert("end", f"\n👤 You: {user_message}\n\n")
+        self.chat_display.insert("end", f"\nYou: {user_message}\n\n")
         if start is not None and hasattr(self.chat_display, "tag_add"):
             end = self.chat_display.index("end")
             self.chat_display.tag_add("user_msg", start, end)
@@ -513,7 +514,7 @@ class ChatGPTClient:
     def get_response(self):
         """Stream the assistant's reply, execute tool calls, and push updates."""
         try:
-            self.response_queue.put("🤖 Assistant: ")
+            self.response_queue.put("Assistant: ")
             while True:
                 response_text = ""
                 tool_data: dict[str, dict[str, str]] = {}
@@ -612,7 +613,7 @@ class ChatGPTClient:
     def run_agent(self, agent_type: str, question: str) -> None:
         """Execute the selected agent and stream steps to the queue."""
         try:
-            self.response_queue.put("🤖 Assistant: ")
+            self.response_queue.put("Assistant: ")
             if agent_type == "react":
                 agent = ReActAgent(self.simple_llm, self.agent_tools, self.memory)
             elif agent_type == "tot":
@@ -640,16 +641,32 @@ class ChatGPTClient:
             else:
                 self.response_queue.put("未対応のエージェントです\n")
                 return
-            response_text = ""
-            for step in agent.run_iter(question):
-                response_text += step + "\n"
-                self.response_queue.put(step + "\n")
-            self.messages.append({"role": "user", "content": question})
-            self.messages.append({"role": "assistant", "content": response_text})
-            match = re.search(r"(/[^\s]+\.png)", response_text)
-            if match and os.path.isfile(match.group(1)):
-                self.response_queue.put(f"__DIAGRAM__{match.group(1)}")
-            self.response_queue.put("__SAVE__")
+            if agent_type == "tot":
+                self.response_queue.put("__TOT_START__")
+                final_answer = ""
+                for step in agent.run_iter(question):
+                    if step.startswith("最終的な答え:"):
+                        final_answer = step[len("最終的な答え:"):].strip()
+                    else:
+                        self.response_queue.put("__TOT__" + step + "\n")
+                self.response_queue.put("__TOT_END__" + final_answer + "\n")
+                self.messages.append({"role": "user", "content": question})
+                self.messages.append({"role": "assistant", "content": final_answer})
+                match = re.search(r"(/[^\s]+\.png)", final_answer)
+                if match and os.path.isfile(match.group(1)):
+                    self.response_queue.put(f"__DIAGRAM__{match.group(1)}")
+                self.response_queue.put("__SAVE__")
+            else:
+                response_text = ""
+                for step in agent.run_iter(question):
+                    response_text += step + "\n"
+                    self.response_queue.put(step + "\n")
+                self.messages.append({"role": "user", "content": question})
+                self.messages.append({"role": "assistant", "content": response_text})
+                match = re.search(r"(/[^\s]+\.png)", response_text)
+                if match and os.path.isfile(match.group(1)):
+                    self.response_queue.put(f"__DIAGRAM__{match.group(1)}")
+                self.response_queue.put("__SAVE__")
         except Exception as exc:
             self.response_queue.put(f"\n\nエラー: {exc}\n")
     
@@ -784,7 +801,7 @@ class ChatGPTClient:
             if isinstance(content, list):
                 # content may be structured as list of parts
                 content = "".join(part.get("text", "") for part in content)
-            prefix = "👤 You" if role == "user" else "🤖 Assistant"
+            prefix = "You" if role == "user" else "Assistant"
             start = self.chat_display.index("end") if hasattr(self.chat_display, "index") else None
             self.chat_display.insert("end", f"\n{prefix}: {content}\n\n")
             if start is not None and hasattr(self.chat_display, "tag_add"):
@@ -843,16 +860,33 @@ class ChatGPTClient:
                         daemon=True,
                     ).start()
                     continue
+                if item == "__TOT_START__":
+                    self.tot_start = None
+                    continue
                 self.chat_display.configure(state="normal")
-                if item.startswith("🤖 Assistant: "):
+                if item.startswith("Assistant: "):
                     self.assistant_start = self.chat_display.index("end") if hasattr(self.chat_display, "index") else None
                     self.chat_display.insert("end", item)
+                elif item.startswith("__TOT__"):
+                    if self.tot_start is None:
+                        self.tot_start = self.chat_display.index("end")
+                    self.chat_display.insert("end", item[len("__TOT__"):])
+                elif item.startswith("__TOT_END__"):
+                    final = item[len("__TOT_END__"):]
+                    if self.tot_start is not None:
+                        self.chat_display.delete(self.tot_start, "end")
+                        self.tot_start = None
+                    self.chat_display.insert("end", final)
+                    if self.assistant_start is not None and final.endswith("\n") and hasattr(self.chat_display, "tag_add"):
+                        end = self.chat_display.index("end")
+                        self.chat_display.tag_add("assistant_msg", self.assistant_start, end)
+                        self.assistant_start = None
                 else:
                     self.chat_display.insert("end", item)
-                if self.assistant_start is not None and item.endswith("\n") and hasattr(self.chat_display, "tag_add"):
-                    end = self.chat_display.index("end")
-                    self.chat_display.tag_add("assistant_msg", self.assistant_start, end)
-                    self.assistant_start = None
+                    if self.assistant_start is not None and item.endswith("\n") and hasattr(self.chat_display, "tag_add"):
+                        end = self.chat_display.index("end")
+                        self.chat_display.tag_add("assistant_msg", self.assistant_start, end)
+                        self.assistant_start = None
                 self.chat_display.see("end")
                 self.chat_display.configure(state="disabled")
         except queue.Empty:
