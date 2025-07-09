@@ -1,5 +1,6 @@
 import tempfile
 from graphviz import Source
+import subprocess
 from pydantic import BaseModel, Field
 from .base import Tool
 
@@ -15,6 +16,10 @@ def create_graphviz_diagram(dot_code: str) -> str:
         src = Source(dot_code)
         src.format = "png"
         src.render(out_file.name, cleanup=True)
+    except FileNotFoundError:
+        return "Failed to generate diagram: Graphviz 'dot' executable not found"
+    except subprocess.CalledProcessError as exc:
+        return f"Failed to generate diagram: {exc}"
     except Exception as exc:
         return f"Failed to generate diagram: {exc}"
     return out_file.name
