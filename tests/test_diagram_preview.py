@@ -9,6 +9,7 @@ def _client():
     c.diagram_label = SimpleNamespace(configure=lambda **k: c.calls.setdefault('label', []).append(k), image=None)
     c.save_button = SimpleNamespace(configure=lambda **k: c.calls.setdefault('save', []).append(k))
     c.clear_button = SimpleNamespace(configure=lambda **k: c.calls.setdefault('clear', []).append(k))
+    c.copy_button = SimpleNamespace(configure=lambda **k: c.calls.setdefault('copy', []).append(k))
     c.calls = {}
     return c
 
@@ -48,4 +49,22 @@ def test_save_diagram(monkeypatch, tmp_path):
     client.save_diagram()
 
     assert dest.exists()
+    assert info_calls
+
+
+def test_copy_diagram(monkeypatch):
+    client = _client()
+    client._diagram_path = "foo.png"
+    clipboard = {}
+    client.window = SimpleNamespace(
+        clipboard_clear=lambda: clipboard.update(clear=True),
+        clipboard_append=lambda v: clipboard.update(value=v),
+    )
+    info_calls = []
+    monkeypatch.setattr(GPT.messagebox, "showinfo", lambda *a, **k: info_calls.append(a))
+    monkeypatch.setattr(GPT.messagebox, "showerror", lambda *a, **k: None)
+
+    client.copy_diagram()
+
+    assert clipboard.get("value") == "foo.png"
     assert info_calls

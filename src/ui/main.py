@@ -285,6 +285,15 @@ class ChatGPTClient:
         )
         self.save_button.pack(pady=(0, 10))
 
+        self.copy_button = ctk.CTkButton(
+            self.diagram_panel,
+            text="コピー",
+            command=lambda: self.copy_diagram(),
+            font=(FONT_FAMILY, 14),
+            state="disabled",
+        )
+        self.copy_button.pack(pady=(0, 10))
+
         self.clear_button = ctk.CTkButton(
             self.diagram_panel,
             text="クリア",
@@ -845,6 +854,7 @@ class ChatGPTClient:
         self.diagram_label.image = preview
         self.save_button.configure(state="normal")
         self.clear_button.configure(state="normal")
+        self.copy_button.configure(state="normal")
         self._diagram_path = path
 
     def save_diagram(self) -> None:
@@ -866,7 +876,19 @@ class ChatGPTClient:
         self.diagram_label.image = None
         self.save_button.configure(state="disabled")
         self.clear_button.configure(state="disabled")
+        self.copy_button.configure(state="disabled")
         self._diagram_path = None
+
+    def copy_diagram(self) -> None:
+        """Copy the diagram path to the clipboard."""
+        if not getattr(self, "_diagram_path", None):
+            return
+        try:
+            self.window.clipboard_clear()
+            self.window.clipboard_append(self._diagram_path)
+            messagebox.showinfo("コピー完了", "図のファイルパスをコピーしました")
+        except Exception as exc:
+            messagebox.showerror("コピーエラー", str(exc))
 
     def process_queue(self):
         """キューからのメッセージをGUIに反映"""
