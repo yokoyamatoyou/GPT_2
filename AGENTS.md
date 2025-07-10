@@ -42,6 +42,7 @@ When modifying this project, keep the following behaviors in mind:
 21. The Tree-of-Thoughts agent reads `TOT_DEPTH` and `TOT_BREADTH` from the environment to set its search depth and branching factor. Invalid values cause `parse_args` to exit with an error on the CLI or display an error in the GUI.
 
 22. The preview sidebar also includes a "コピー" button that copies the PNG file path to the clipboard so users can easily reference the generated image.
+23. ``get_font_family`` checks the ``PREFERRED_FONT`` environment variable. When set it overrides the default "Meiryo" preference before falling back to "Helvetica" if the font is unavailable.
 
 ---
 
