@@ -32,7 +32,7 @@ Windows では `run_gui.bat` を利用することもできます。
 
 ## 3. ダイアグラム生成
 
-`create_graphviz_diagram` と `create_mermaid_diagram` を使うと、DOT や Mermaid コードから PNG 画像を生成できます。生成されたファイルパスがチャットに表示され、右側のプレビューに画像が読み込まれます。"保存" ボタンで任意の場所へ保存できます。
+`create_graphviz_diagram` と `create_mermaid_diagram` を使うと、DOT や Mermaid コードから PNG 画像を生成できます。生成されたファイルパスがチャットに表示され、右側のプレビューに画像が読み込まれます。"保存" ボタンで任意の場所へ保存できます。 また、「コピー」ボタンでファイルパスをクリップボードにコピーできます。
 
 ## 4. コマンドラインツール
 

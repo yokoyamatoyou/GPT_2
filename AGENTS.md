@@ -41,6 +41,8 @@ When modifying this project, keep the following behaviors in mind:
 20. A presentation agent can generate HTML slides. Use ``--agent presentation`` on the CLI or choose ``プレゼンテーション`` in the GUI.
 21. The Tree-of-Thoughts agent reads `TOT_DEPTH` and `TOT_BREADTH` from the environment to set its search depth and branching factor. Invalid values cause `parse_args` to exit with an error on the CLI or display an error in the GUI.
 
+22. The preview sidebar also includes a "コピー" button that copies the PNG file path to the clipboard so users can easily reference the generated image.
+
 ---
 
 ## **パートI：戦略的ブループリントとアーキテクチャの展望（計画）**
