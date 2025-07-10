@@ -32,7 +32,13 @@ from src.tools.mermaid_tool import create_mermaid_diagram
 
 
 def get_font_family(preferred: str = "Meiryo") -> str:
-    """Return preferred font if available else fall back to a standard family."""
+    """Return preferred font if available else fall back to a standard family.
+
+    The environment variable ``PREFERRED_FONT`` can override ``preferred``.
+    """
+    env_font = os.getenv("PREFERRED_FONT")
+    if env_font:
+        preferred = env_font
     try:
         root = tkinter.Tk()
         root.withdraw()
