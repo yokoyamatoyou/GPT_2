@@ -232,6 +232,11 @@ simple HTML slides. The assistant creates an outline in JSON and the
 application converts it to A4-sized pages with consistent styling and readable
 contrast. The resulting HTML file path is shown in the chat so you can open or
 edit it as needed.
+You can run the same feature from the command line using:
+
+```bash
+python -m src.main --agent presentation
+```
 ## Verbose Logging
 
 Set `verbose=True` when creating `ReActAgent` to enable debug output using Python's `logging` module.
