@@ -41,6 +41,8 @@ echo "OPENAI_API_KEY=your_key_here" >> .env
   `gpt-3.5-turbo` in the drop-down menu.
 - `OPENAI_TOKEN_PRICE` – price per token for usage cost logging
 - `OPENAI_TIMEOUT` – request timeout in seconds for OpenAI API calls
+- `PREFERRED_FONT` – preferred font family for the GUI (falls back to
+  `Meiryo` or `Helvetica` if unavailable)
 
 ### 4. Launch the application
 
