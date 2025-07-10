@@ -207,6 +207,12 @@ Show the available tools and exit with `--list-tools`:
 python -m src.main --list-tools
 ```
 
+List supported agent types with `--list-agents`:
+
+```bash
+python -m src.main --list-agents
+```
+
 ## Chain-of-Thought Agent
 
 Select the simple CoT agent when you only need a single reasoning chain without tool calls:
