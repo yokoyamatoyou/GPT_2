@@ -28,6 +28,10 @@ def test_parse_args_list_tools():
     args = src_main.parse_args(['--list-tools'])
     assert args.list_tools
 
+def test_parse_args_list_agents():
+    args = src_main.parse_args(['--list-agents'])
+    assert args.list_agents
+
 def test_parse_args_model():
     args = src_main.parse_args(['--model', 'gpt-4'])
     assert args.model == 'gpt-4'
@@ -378,6 +382,16 @@ def test_main_list_tools(monkeypatch):
 
     assert any('web_scraper' in line for line in out)
     assert any('sqlite_query' in line for line in out)
+
+
+def test_main_list_agents(monkeypatch):
+    out = []
+    monkeypatch.setattr('builtins.print', lambda *a, **k: out.append(' '.join(map(str, a))))
+
+    src_main.main(['--list-agents'])
+
+    assert any('react' in line for line in out)
+    assert any('cot' in line for line in out)
 
 
 def test_main_passes_model(monkeypatch):

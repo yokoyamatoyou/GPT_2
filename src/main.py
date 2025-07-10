@@ -16,6 +16,14 @@ from src.vector_memory import VectorMemory
 
 logger = logging.getLogger(__name__)
 
+# Mapping of available agent types to brief descriptions
+AGENT_INFO = {
+    "react": "ReAct agent that uses tools",
+    "cot": "Chain-of-Thought agent",
+    "tot": "Tree-of-Thoughts agent",
+    "presentation": "Generate HTML slides",
+}
+
 
 def positive_int(value: str) -> int:
     """Return *value* as a positive ``int``.
@@ -169,6 +177,11 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
         help="List available tools and exit",
     )
     parser.add_argument(
+        "--list-agents",
+        action="store_true",
+        help="List available agent types and exit",
+    )
+    parser.add_argument(
         "--model",
         help="OpenAI model name to use (overrides OPENAI_MODEL)",
     )
@@ -196,6 +209,10 @@ def main(argv: list[str] | None = None) -> None:
     if args.list_tools:
         for t in get_default_tools():
             print(f"{t.name}: {t.description}")
+        return
+    if args.list_agents:
+        for name, desc in AGENT_INFO.items():
+            print(f"{name}: {desc}")
         return
     llm = create_llm(log_usage=True, model=args.model)
     memory = None
