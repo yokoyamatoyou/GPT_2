@@ -31,13 +31,25 @@ def positive_int(value: str) -> int:
 
 def read_tot_env() -> tuple[int | None, int | None]:
     """Return depth and breadth from environment variables if set and valid."""
+
     depth = os.getenv("TOT_DEPTH")
     breadth = os.getenv("TOT_BREADTH")
-    try:
-        depth_val = positive_int(depth) if depth is not None else None
-        breadth_val = positive_int(breadth) if breadth is not None else None
-    except argparse.ArgumentTypeError as exc:  # pragma: no cover - just re-raise
-        raise SystemExit(exc)
+
+    depth_val: int | None = None
+    breadth_val: int | None = None
+
+    if depth is not None:
+        try:
+            depth_val = positive_int(depth)
+        except argparse.ArgumentTypeError:
+            raise SystemExit(f"Invalid TOT_DEPTH={depth!r}")
+
+    if breadth is not None:
+        try:
+            breadth_val = positive_int(breadth)
+        except argparse.ArgumentTypeError:
+            raise SystemExit(f"Invalid TOT_BREADTH={breadth!r}")
+
     return depth_val, breadth_val
 
 
