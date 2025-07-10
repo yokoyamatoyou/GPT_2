@@ -19,7 +19,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 
 from src.agent import ReActAgent, CoTAgent, ToTAgent, PresentationAgent
-from src.main import create_evaluator
+from src.main import create_evaluator, read_tot_env
 from src.memory import ConversationMemory
 from src.tools import (
     get_web_scraper,
@@ -45,25 +45,6 @@ def get_font_family(preferred: str = "Meiryo") -> str:
     return "Helvetica"
 
 
-def _positive_int(value: str) -> int:
-    """Return *value* as a positive int."""
-    num = int(value)
-    if num < 1:
-        raise ValueError
-    return num
-
-
-def _read_tot_env() -> tuple[int | None, int | None]:
-    """Return depth and breadth from environment variables if valid."""
-    depth = os.getenv("TOT_DEPTH")
-    breadth = os.getenv("TOT_BREADTH")
-    depth_val = None
-    breadth_val = None
-    if depth is not None:
-        depth_val = _positive_int(depth)
-    if breadth is not None:
-        breadth_val = _positive_int(breadth)
-    return depth_val, breadth_val
 
 # Mapping of tool names to implementation functions
 TOOL_FUNCS = {
@@ -661,12 +642,12 @@ class ChatGPTClient:
                 depth = 2
                 breadth = 2
                 try:
-                    env_depth, env_breadth = _read_tot_env()
+                    env_depth, env_breadth = read_tot_env()
                     if env_depth is not None:
                         depth = env_depth
                     if env_breadth is not None:
                         breadth = env_breadth
-                except Exception as exc:
+                except (SystemExit, Exception) as exc:
                     self.response_queue.put(f"\n\nエラー: {exc}\n")
                     return
                 evaluator = create_evaluator(self.simple_llm)
