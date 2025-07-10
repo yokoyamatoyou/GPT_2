@@ -29,8 +29,8 @@ def positive_int(value: str) -> int:
     return ivalue
 
 
-def _read_tot_env() -> tuple[int | None, int | None]:
-    """Return depth and breadth from environment variables if set."""
+def read_tot_env() -> tuple[int | None, int | None]:
+    """Return depth and breadth from environment variables if set and valid."""
     depth = os.getenv("TOT_DEPTH")
     breadth = os.getenv("TOT_BREADTH")
     try:
@@ -166,7 +166,7 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
     if parsed.agent == "tot":
         if "--depth" not in arg_list or "--breadth" not in arg_list:
             try:
-                depth_val, breadth_val = _read_tot_env()
+                depth_val, breadth_val = read_tot_env()
             except SystemExit as exc:
                 raise SystemExit(f"Invalid TOT_DEPTH/BREADTH: {exc}")
             if "--depth" not in arg_list and depth_val is not None:
