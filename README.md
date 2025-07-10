@@ -2,6 +2,10 @@
 
 This repository contains a simple desktop interface for ChatGPT built with [CustomTkinter](https://github.com/TomSchimansky/CustomTkinter). The `src/ui/main.py` script provides a GUI for interacting with OpenAI models and supports uploading files such as Word documents, PDFs, images and Excel spreadsheets.
 
+See [agent_comparison.md](docs/agent_comparison.md) for an overview of the available agent frameworks.
+
+The GUI also includes a help tab labeled "エージェント比較" that explains CoT, ReAct and ToT in Japanese with short examples and prompt tips.
+
 ## Getting Started
 
 Follow the steps below to run the application locally.
@@ -186,6 +190,15 @@ Show the available tools and exit with `--list-tools`:
 ```bash
 python -m src.main --list-tools
 ```
+
+## Chain-of-Thought Agent
+
+Select the simple CoT agent when you only need a single reasoning chain without tool calls:
+
+```bash
+python -m src.main --agent cot
+```
+The GUI drop-down also includes an option labeled `cot`.
 
 ## Experimental ToT Agent
 

@@ -38,6 +38,7 @@ When modifying this project, keep the following behaviors in mind:
 17. Automatic conversation saving runs in a background thread without showing a popup so the UI remains responsive.
 18. The Tree-of-Thoughts agent streams search steps while running but removes them from the chat once the final answer is produced so only the answer is saved.
 Document further changes to these features in this section so future Codex sessions remain aware of the expected behavior.
+19. A simple Chain-of-Thought (CoT) agent is available. Select ``cot`` from the CLI ``--agent`` option or the GUI drop-down to run a linear reasoning loop without tool use.
 
 ---
 
