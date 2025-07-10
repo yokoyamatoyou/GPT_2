@@ -44,6 +44,11 @@ def test_parse_args_cot():
     assert args.agent == 'cot'
 
 
+def test_parse_args_presentation():
+    args = src_main.parse_args(['--agent', 'presentation'])
+    assert args.agent == 'presentation'
+
+
 def test_parse_args_tot_env(monkeypatch):
     monkeypatch.setenv('TOT_DEPTH', '7')
     monkeypatch.setenv('TOT_BREADTH', '8')
@@ -189,6 +194,27 @@ def test_main_uses_cot_agent(monkeypatch):
     monkeypatch.setattr('builtins.print', lambda *a, **k: None)
 
     src_main.main(['--agent', 'cot'])
+
+    assert called.get('called', False)
+
+
+def test_main_uses_presentation_agent(monkeypatch):
+    called = {}
+
+    class DummyPres:
+        def __init__(self, llm):
+            called['called'] = True
+
+        def run(self, q):
+            return 'ok'
+
+    monkeypatch.setattr(src_main, 'PresentationAgent', DummyPres)
+    monkeypatch.setattr(src_main, 'create_llm', lambda log_usage=True, model=None: lambda p: 'x')
+    monkeypatch.setattr(src_main, 'setup_logging', lambda **k: None)
+    monkeypatch.setattr('builtins.input', lambda prompt='': '')
+    monkeypatch.setattr('builtins.print', lambda *a, **k: None)
+
+    src_main.main(['--agent', 'presentation'])
 
     assert called.get('called', False)
 
