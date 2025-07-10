@@ -163,6 +163,14 @@ python -m src.main --agent tot --depth 3 --breadth 4
 Alternatively set the defaults with the `TOT_DEPTH` and `TOT_BREADTH`
 environment variables. Invalid values are ignored unless you run the ToT
 agent.
+
+For example:
+
+```bash
+export TOT_DEPTH=3
+export TOT_BREADTH=4
+python -m src.main --agent tot
+```
 You can persist the conversation across runs by specifying `--memory-file` with a
 path to a JSON file. The memory will be loaded at startup and saved when the
 program exits:
