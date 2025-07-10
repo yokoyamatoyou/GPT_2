@@ -15,7 +15,8 @@ def create_graphviz_diagram(dot_code: str) -> str:
     try:
         src = Source(dot_code)
         src.format = "png"
-        src.render(out_file.name, cleanup=True)
+        # Render directly to the temporary file path
+        src.render(outfile=out_file.name, cleanup=True)
     except FileNotFoundError:
         return "Failed to generate diagram: Graphviz 'dot' executable not found"
     except subprocess.CalledProcessError as exc:
