@@ -7,9 +7,9 @@ from src.tools.mermaid_tool import create_mermaid_diagram
 
 
 def test_create_graphviz_diagram_success(monkeypatch, tmp_path):
-    def fake_render(self, filename, cleanup=True):
-        open(filename, "wb").close()
-        return filename
+    def fake_render(self, *, outfile=None, cleanup=True):
+        open(outfile, "wb").close()
+        return outfile
 
     monkeypatch.setattr(Source, "render", fake_render)
     path = create_graphviz_diagram("digraph {a->b}")
@@ -19,7 +19,7 @@ def test_create_graphviz_diagram_success(monkeypatch, tmp_path):
 
 
 def test_create_graphviz_diagram_failure(monkeypatch):
-    def fake_render(self, filename, cleanup=True):
+    def fake_render(self, *, outfile=None, cleanup=True):
         raise RuntimeError("boom")
 
     monkeypatch.setattr(Source, "render", fake_render)
