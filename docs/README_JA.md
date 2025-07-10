@@ -62,6 +62,20 @@ pytest
 
 `CONVERSATION_DIR` を設定すると、デフォルトの `conversations` フォルダの代わりに指定したディレクトリへ会話履歴を保存できます。ディレクトリが存在しない場合は自動作成されます。
 
-## 7. 参考
+## 7. ロギング設定
+
+`setup_logging` を使うとコンソールに加えて任意のファイルへログを書き出せます。
+`AGENT_LOG_FILE` 環境変数を指定すると、デフォルトで使用するログファイルを設定できます。
+
+```python
+from src import setup_logging
+setup_logging(level=logging.DEBUG)  # AGENT_LOG_FILE があれば使用
+```
+
+## 8. トークン使用量の記録
+
+`create_llm` を `log_usage=True` で呼び出すと、OpenAI API のトークン数と概算コストをログに記録します。`OPENAI_TOKEN_PRICE` にトークン単価を設定してください。リクエストのタイムアウトは `OPENAI_TIMEOUT` で調整できます。
+
+## 9. 参考
 
 詳細な仕様や追加設定項目については英語版 README (`README.md`) を参照してください。
