@@ -74,6 +74,9 @@ TOOL_FUNCS = {
 # Load environment variables from .env if present
 load_dotenv()
 
+# Default directory for saving conversations
+CONV_DIR = os.getenv("CONVERSATION_DIR", "conversations")
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -743,13 +746,13 @@ class ChatGPTClient:
             return
         
         # conversationsディレクトリがなければ作成
-        if not os.path.exists("conversations"):
-            os.makedirs("conversations")
+        if not os.path.exists(CONV_DIR):
+            os.makedirs(CONV_DIR)
             
         filename_base = f"{self.current_title}_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}"
         # ファイル名に使えない文字を置換
         filename_safe = "".join(c if c.isalnum() or c in (' ', '-', '_') else '_' for c in filename_base)
-        filename = os.path.join("conversations", f"{filename_safe}.json")
+        filename = os.path.join(CONV_DIR, f"{filename_safe}.json")
         
         # uploaded_filesのcontentは保存しない (大きすぎる可能性があるため)
         files_metadata = []
@@ -809,6 +812,7 @@ class ChatGPTClient:
         file_path = filedialog.askopenfilename(
             title="会話を選択",
             filetypes=[("Conversation", "*.json")],
+            initialdir=CONV_DIR,
         )
         if file_path:
             self.load_conversation(file_path)

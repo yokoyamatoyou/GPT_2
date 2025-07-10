@@ -64,3 +64,20 @@ def test_save_conversation_with_tool(tmp_path, monkeypatch):
         data = json.load(f)
 
     assert data["messages"] == client.messages
+
+
+def test_save_conversation_custom_dir(tmp_path, monkeypatch):
+    client = _client()
+    client.current_title = "CustomDir"
+    client.model_var = SimpleNamespace(get=lambda: "model-x")
+    client.messages = [{"role": "user", "content": "hi"}]
+    client.uploaded_files = []
+
+    custom = tmp_path / "mydir"
+    monkeypatch.setattr(GPT, "CONV_DIR", str(custom))
+    monkeypatch.chdir(tmp_path)
+
+    client.save_conversation(show_popup=False)
+
+    files = list(custom.glob("*.json"))
+    assert len(files) == 1
