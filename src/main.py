@@ -9,7 +9,7 @@ from openai import OpenAI
 
 from .logging_utils import setup_logging
 
-from src.agent import ReActAgent, ToTAgent
+from src.agent import ReActAgent, CoTAgent, ToTAgent
 from src.tools import get_default_tools
 from src.memory import ConversationMemory
 from src.vector_memory import VectorMemory
@@ -118,7 +118,7 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument(
         "--agent",
-        choices=["react", "tot"],
+        choices=["react", "cot", "tot"],
         default="react",
         help="Which agent implementation to use (tot is experimental)",
     )
@@ -199,6 +199,16 @@ def main(argv: list[str] | None = None) -> None:
                 )
         tools = get_default_tools()
         agent = ReActAgent(llm, tools, memory, verbose=args.verbose)
+    elif args.agent == "cot":
+        memory = VectorMemory() if args.memory == "vector" else ConversationMemory()
+        if args.memory_file and os.path.exists(args.memory_file):
+            try:
+                memory.load(args.memory_file)
+            except Exception as exc:
+                logger.warning(
+                    "Failed to load memory file %s: %s", args.memory_file, exc
+                )
+        agent = CoTAgent(llm, memory, verbose=args.verbose)
     else:
         evaluator = create_evaluator(llm)
         memory = VectorMemory() if args.memory == "vector" else ConversationMemory()

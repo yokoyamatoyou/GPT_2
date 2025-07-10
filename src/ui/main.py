@@ -18,7 +18,7 @@ import openpyxl
 from dotenv import load_dotenv
 from openai import OpenAI
 
-from src.agent import ReActAgent, ToTAgent, PresentationAgent
+from src.agent import ReActAgent, CoTAgent, ToTAgent, PresentationAgent
 from src.main import create_evaluator
 from src.memory import ConversationMemory
 from src.tools import (
@@ -179,6 +179,12 @@ class ChatGPTClient:
         # メインコンテナ
         main_container = ctk.CTkFrame(self.window, fg_color="transparent")
         main_container.pack(fill="both", expand=True, padx=20, pady=20)
+
+        # 右側のチャット/ヘルプ切り替えタブ
+        tabview = ctk.CTkTabview(main_container)
+        tabview.pack(side="right", fill="both", expand=True)
+        chat_tab = tabview.add("チャット")
+        info_tab = tabview.add("エージェント比較")
         
         # 左側パネル（設定）
         left_panel = ctk.CTkFrame(
@@ -230,7 +236,7 @@ class ChatGPTClient:
 
         agent_menu = ctk.CTkOptionMenu(
             left_panel,
-            values=["chatgpt", "react", "tot", "プレゼンテーション"],
+            values=["chatgpt", "react", "cot", "tot", "プレゼンテーション"],
             variable=self.agent_var,
             width=250,
         )
@@ -306,7 +312,7 @@ class ChatGPTClient:
 
         # 右側パネル（チャット）
         right_panel = ctk.CTkFrame(
-            main_container,
+            chat_tab,
             fg_color="#FFFFFF",
             corner_radius=8,
             border_width=0,
@@ -337,6 +343,33 @@ class ChatGPTClient:
                                 command=self.send_message,
                                 font=(FONT_FAMILY, 16))
         send_btn.pack(side="right")
+
+        help_box = ctk.CTkTextbox(info_tab, font=(FONT_FAMILY, 14), wrap="word")
+        help_box.pack(fill="both", expand=True, padx=10, pady=10)
+        help_text = (
+            "# エージェント比較\n\n"
+            "## Chain of Thought (CoT)\n"
+            "1. 単純な線形推論を行います。\n"
+            "2. '思考:' と '最終的な答え:' を順番に返します。\n"
+            "例: 質問『富士山の高さは？』\n"
+            "思考: 富士山は日本の最高峰で3776m。\n"
+            "最終的な答え: 3776メートルです。\n\n"
+            "## ReAct\n"
+            "1. 思考とツール利用を交互に行います。\n"
+            "2. '思考 -> 行動 -> 観察' を繰り返し最終回答を導きます。\n"
+            "例: ウェブ検索を使って最新ニュースを取得。\n\n"
+            "## Tree of Thoughts (ToT)\n"
+            "1. 複数の思考パスを探索し最良の答えを選択します。\n"
+            "2. 探索深さと分岐数は環境変数で調整できます。\n"
+            "例: パズルの解法候補をいくつか試す。\n\n"
+            "## プロンプト作成のコツ\n"
+            "- 目的や条件を具体的に書く\n"
+            "- 望ましい出力形式を明示する\n"
+            "- 背景情報や制約を事前に伝える\n"
+            "詳細は OpenAI のベストプラクティス(https://platform.openai.com/docs/guides/gpt-best-practices) を参照してください。"
+        )
+        help_box.insert("1.0", help_text)
+        help_box.configure(state="disabled")
         
     def upload_file(self):
         """Prompt for a file and store its contents."""
@@ -466,8 +499,11 @@ class ChatGPTClient:
 
         if not self.messages:
             system_prompt = (
-                "あなたは優秀なAIアシスタントです。ユーザーの質問が曖昧だと判断した場合、"
-                "通常の回答の後に『【プロンプトアドバイス】』という見出しを付け、より具体的な質問の例を2〜3個提示してください。"
+                "あなたは優秀なAIアシスタントです。"
+                "ユーザーの質問が曖昧だと判断した場合、"
+                "OpenAI が公開しているプロンプト作成ベストプラクティス(https://platform.openai.com/docs/guides/gpt-best-practices)を参考に、"
+                "通常の回答の後で『【プロンプトアドバイス】』という見出しを付け、"
+                "より具体的に質問するための例を2〜3個日本語で提示してください。"
                 "例: 『ラーメンについて教えて』→『東京でおすすめの醤油ラーメンのお店は？』"
             )
             self.messages.append({"role": "system", "content": system_prompt})
@@ -616,6 +652,8 @@ class ChatGPTClient:
             self.response_queue.put("Assistant: ")
             if agent_type == "react":
                 agent = ReActAgent(self.simple_llm, self.agent_tools, self.memory)
+            elif agent_type == "cot":
+                agent = CoTAgent(self.simple_llm, self.memory)
             elif agent_type == "tot":
                 depth = 2
                 breadth = 2

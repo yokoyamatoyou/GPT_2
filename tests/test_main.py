@@ -39,6 +39,11 @@ def test_parse_args_tot_options():
     assert args.breadth == 6
 
 
+def test_parse_args_cot():
+    args = src_main.parse_args(['--agent', 'cot'])
+    assert args.agent == 'cot'
+
+
 def test_parse_args_tot_env(monkeypatch):
     monkeypatch.setenv('TOT_DEPTH', '7')
     monkeypatch.setenv('TOT_BREADTH', '8')
@@ -64,6 +69,15 @@ def test_parse_args_tot_env_ignored_for_react(monkeypatch):
     # Should not raise SystemExit because the default agent is react
     args = src_main.parse_args([])
     assert args.agent == 'react'
+    assert args.depth == 2
+    assert args.breadth == 2
+
+
+def test_parse_args_tot_env_ignored_for_cot(monkeypatch):
+    monkeypatch.setenv('TOT_DEPTH', '0')
+    monkeypatch.setenv('TOT_BREADTH', '0')
+    args = src_main.parse_args(['--agent', 'cot'])
+    assert args.agent == 'cot'
     assert args.depth == 2
     assert args.breadth == 2
 
@@ -158,6 +172,27 @@ def test_main_uses_tot_agent(monkeypatch):
     assert created['breadth'] == 4
 
 
+def test_main_uses_cot_agent(monkeypatch):
+    called = {}
+
+    class DummyCot:
+        def __init__(self, llm, memory=None, verbose=False):
+            called['called'] = True
+
+        def run(self, q):
+            return 'ok'
+
+    monkeypatch.setattr(src_main, 'CoTAgent', DummyCot)
+    monkeypatch.setattr(src_main, 'create_llm', lambda log_usage=True, model=None: lambda p: 'x')
+    monkeypatch.setattr(src_main, 'setup_logging', lambda **k: None)
+    monkeypatch.setattr('builtins.input', lambda prompt='': '')
+    monkeypatch.setattr('builtins.print', lambda *a, **k: None)
+
+    src_main.main(['--agent', 'cot'])
+
+    assert called.get('called', False)
+
+
 def test_main_tot_loads_and_saves_memory(tmp_path, monkeypatch):
     mem_file = tmp_path / 'mem.json'
     mem_file.write_text('{"messages": []}', encoding='utf-8')
@@ -191,6 +226,43 @@ def test_main_tot_loads_and_saves_memory(tmp_path, monkeypatch):
     monkeypatch.setattr('builtins.print', lambda *a, **k: None)
 
     src_main.main(['--agent', 'tot', '--memory-file', str(mem_file)])
+
+    assert loaded['val']
+    assert saved['val']
+
+
+def test_main_cot_loads_and_saves_memory(tmp_path, monkeypatch):
+    mem_file = tmp_path / 'mem.json'
+    mem_file.write_text('{"messages": []}', encoding='utf-8')
+
+    loaded = {'val': False}
+    saved = {'val': False}
+
+    class DummyMemory(src_main.ConversationMemory):
+        def load(self, path: str) -> None:
+            loaded['val'] = True
+            super().load(path)
+
+        def save(self, path: str) -> None:
+            saved['val'] = True
+            super().save(path)
+
+    class DummyCot:
+        def __init__(self, llm, memory=None, verbose=False):
+            self.memory = memory
+
+        def run(self, q):
+            return 'ok'
+
+    monkeypatch.setattr(src_main, 'CoTAgent', DummyCot)
+    monkeypatch.setattr(src_main, 'create_llm', lambda log_usage=True, model=None: lambda p: 'x')
+    monkeypatch.setattr(src_main, 'setup_logging', lambda **k: None)
+    monkeypatch.setattr(src_main, 'ConversationMemory', DummyMemory)
+    monkeypatch.setattr(src_main, 'VectorMemory', DummyMemory)
+    monkeypatch.setattr('builtins.input', lambda prompt='': '')
+    monkeypatch.setattr('builtins.print', lambda *a, **k: None)
+
+    src_main.main(['--agent', 'cot', '--memory-file', str(mem_file)])
 
     assert loaded['val']
     assert saved['val']
