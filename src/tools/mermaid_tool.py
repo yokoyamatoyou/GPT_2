@@ -1,3 +1,4 @@
+import os
 import tempfile
 from mermaid import Mermaid
 from pydantic import BaseModel, Field
@@ -16,8 +17,10 @@ def create_mermaid_diagram(mermaid_code: str) -> str:
         diagram = Mermaid(mermaid_code)
         diagram.to_png(out_file.name)
     except requests.RequestException as exc:
+        os.unlink(out_file.name)
         return f"Failed to fetch Mermaid diagram: {exc}"
     except Exception as exc:
+        os.unlink(out_file.name)
         return f"Failed to generate diagram: {exc}"
     return out_file.name
 

@@ -1,4 +1,5 @@
 import os
+import tempfile
 from graphviz import Source
 from mermaid import Mermaid
 
@@ -18,13 +19,29 @@ def test_create_graphviz_diagram_success(monkeypatch, tmp_path):
     os.unlink(path)
 
 
-def test_create_graphviz_diagram_failure(monkeypatch):
+def test_create_graphviz_diagram_failure(monkeypatch, tmp_path):
     def fake_render(self, *, outfile=None, cleanup=True):
         raise RuntimeError("boom")
 
     monkeypatch.setattr(Source, "render", fake_render)
+
+    temp_path = tmp_path / "gv.png"
+
+    def fake_tempfile(*args, **kwargs):
+        class Temp:
+            def __init__(self, name):
+                self.name = str(name)
+
+            def close(self):
+                open(self.name, "wb").close()
+
+        return Temp(temp_path)
+
+    monkeypatch.setattr(tempfile, "NamedTemporaryFile", fake_tempfile)
+
     result = create_graphviz_diagram("digraph {}")
     assert result.startswith("Failed to generate diagram")
+    assert not temp_path.exists()
 
 
 def test_create_mermaid_diagram_success(monkeypatch):
@@ -38,10 +55,26 @@ def test_create_mermaid_diagram_success(monkeypatch):
     os.unlink(path)
 
 
-def test_create_mermaid_diagram_failure(monkeypatch):
+def test_create_mermaid_diagram_failure(monkeypatch, tmp_path):
     def fake_png(self, filename):
         raise RuntimeError("fail")
 
     monkeypatch.setattr(Mermaid, "to_png", fake_png)
+
+    temp_path = tmp_path / "md.png"
+
+    def fake_tempfile(*args, **kwargs):
+        class Temp:
+            def __init__(self, name):
+                self.name = str(name)
+
+            def close(self):
+                open(self.name, "wb").close()
+
+        return Temp(temp_path)
+
+    monkeypatch.setattr(tempfile, "NamedTemporaryFile", fake_tempfile)
+
     result = create_mermaid_diagram("graph TD;")
     assert result.startswith("Failed to generate diagram")
+    assert not temp_path.exists()

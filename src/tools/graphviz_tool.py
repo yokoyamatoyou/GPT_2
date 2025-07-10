@@ -1,3 +1,4 @@
+import os
 import tempfile
 from graphviz import Source
 import subprocess
@@ -18,10 +19,13 @@ def create_graphviz_diagram(dot_code: str) -> str:
         # Render directly to the temporary file path
         src.render(outfile=out_file.name, cleanup=True)
     except FileNotFoundError:
+        os.unlink(out_file.name)
         return "Failed to generate diagram: Graphviz 'dot' executable not found"
     except subprocess.CalledProcessError as exc:
+        os.unlink(out_file.name)
         return f"Failed to generate diagram: {exc}"
     except Exception as exc:
+        os.unlink(out_file.name)
         return f"Failed to generate diagram: {exc}"
     return out_file.name
 
