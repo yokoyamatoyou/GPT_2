@@ -32,20 +32,26 @@ from src.tools.mermaid_tool import create_mermaid_diagram
 
 
 def get_font_family(preferred: str = "Meiryo") -> str:
-    """Return preferred font if available else fall back to a standard family.
+    """Return an available font family.
 
-    The environment variable ``PREFERRED_FONT`` can override ``preferred``.
+    The ``PREFERRED_FONT`` environment variable can specify a single font or a
+    comma-separated list of candidates. The first available font is used before
+    falling back to the ``preferred`` parameter and finally ``Helvetica``.
     """
     env_font = os.getenv("PREFERRED_FONT")
+    candidates = [preferred]
     if env_font:
-        preferred = env_font
+        candidates = [f.strip() for f in env_font.split(",") if f.strip()]
+    else:
+        candidates = [preferred]
     try:
         root = tkinter.Tk()
         root.withdraw()
         families = set(root.tk.call("font", "families"))
         root.destroy()
-        if preferred in families:
-            return preferred
+        for font in candidates:
+            if font in families:
+                return font
     except tkinter.TclError:
         pass
     return "Helvetica"
