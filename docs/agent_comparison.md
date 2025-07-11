@@ -17,4 +17,8 @@ This document summarizes the main differences between the three reasoning framew
 - **Strengths**: Explores many candidate reasoning paths and backtracks when necessary, suitable for puzzles or long term planning.
 - **Weaknesses**: Computationally expensive and more complex to implement.
 
+You can adjust the search depth and branching factor using the `--depth` and
+`--breadth` command line options. When these are omitted, the defaults can be
+set via the `TOT_DEPTH` and `TOT_BREADTH` environment variables.
+
 Select the appropriate framework in the GUI or CLI depending on task complexity.
