@@ -316,6 +316,10 @@ environment variables:
 
 Invalid values are ignored unless `--agent tot` is used.
 
+In the GUI you can select **LOW**, **MIDDLE** or **HIGH** to adjust these
+parameters. The presets correspond to `(2,2)`, `(3,3)` and `(4,4)` for
+depth and breadth. Environment variables override the selection if set.
+
 ## Configuring Logging
 
 Use `setup_logging` to send logs to both the console and optionally a file.
