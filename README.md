@@ -65,6 +65,8 @@ The window should open allowing you to chat with the model and upload supported 
 The application sets its window icon from `src/ui/resources/app_icon.xbm`.
 If you want to use your own image, replace this file with a different XBM
 bitmap or adjust the path in `ChatGPTClient`.
+The layout now uses the grid geometry manager and sets weight
+so each panel resizes with the window. The minimum size is `800x600`.
 
 The left settings panel offers controls to:
 

@@ -93,6 +93,8 @@ class ChatGPTClient:
         self.window = ctk.CTk()
         self.window.title("ChatGPT Desktop")
         self.window.geometry("1200x800")
+        # Allow shrinking on smaller displays
+        self.window.minsize(800, 600)
         try:
             self.window.iconbitmap("@" + ICON_PATH)
         except Exception:
@@ -178,11 +180,15 @@ class ChatGPTClient:
         """Build all widgets and configure layout."""
         # メインコンテナ
         main_container = ctk.CTkFrame(self.window, fg_color="transparent")
-        main_container.pack(fill="both", expand=True, padx=20, pady=20)
+        main_container.grid(row=0, column=0, sticky="nsew", padx=20, pady=20)
+        self.window.grid_rowconfigure(0, weight=1)
+        self.window.grid_columnconfigure(0, weight=1)
+        main_container.grid_rowconfigure(0, weight=1)
+        main_container.grid_columnconfigure(1, weight=1)
 
         # 右側のチャット/ヘルプ切り替えタブ
         tabview = ctk.CTkTabview(main_container)
-        tabview.pack(side="right", fill="both", expand=True)
+        tabview.grid(row=0, column=1, sticky="nsew")
         chat_tab = tabview.add("チャット")
         info_tab = tabview.add("エージェント比較")
         
@@ -194,8 +200,8 @@ class ChatGPTClient:
             corner_radius=8,
             border_width=0,
         )
-        left_panel.pack(side="left", fill="y", padx=(0, 10))
-        left_panel.pack_propagate(False)
+        left_panel.grid(row=0, column=0, sticky="ns", padx=(0, 10))
+        left_panel.grid_propagate(False)
         
         # 設定タイトル
         settings_label = ctk.CTkLabel(left_panel, text="設定",
@@ -298,8 +304,8 @@ class ChatGPTClient:
             corner_radius=8,
             border_width=0,
         )
-        self.diagram_panel.pack(side="right", fill="y")
-        self.diagram_panel.pack_propagate(False)
+        self.diagram_panel.grid(row=0, column=2, sticky="ns")
+        self.diagram_panel.grid_propagate(False)
 
         self.diagram_label = ctk.CTkLabel(self.diagram_panel, text="図のプレビュー", font=(FONT_FAMILY, 16))
         self.diagram_label.pack(padx=10, pady=10)
@@ -338,7 +344,11 @@ class ChatGPTClient:
             corner_radius=8,
             border_width=0,
         )
-        right_panel.pack(side="right", fill="both", expand=True)
+        right_panel.grid(row=0, column=0, sticky="nsew")
+        chat_tab.grid_rowconfigure(0, weight=1)
+        chat_tab.grid_columnconfigure(0, weight=1)
+        right_panel.grid_rowconfigure(0, weight=1)
+        right_panel.grid_columnconfigure(0, weight=1)
         
         # チャットエリア
         self.chat_display = ctk.CTkTextbox(
@@ -347,23 +357,32 @@ class ChatGPTClient:
             wrap="word",
             fg_color="#FFFFFF",
         )
-        self.chat_display.pack(fill="both", expand=True, padx=20, pady=(20, 10))
+        self.chat_display.grid(row=0, column=0, sticky="nsew", padx=20, pady=(20, 10))
         self.chat_display.tag_config("user_msg", background="#FFFFFF")
         self.chat_display.tag_config("assistant_msg", background="#F1F3F4")
         
         # 入力エリア
         input_frame = ctk.CTkFrame(right_panel, fg_color="transparent")
-        input_frame.pack(fill="x", padx=20, pady=(0, 20))
+        input_frame.grid(row=1, column=0, sticky="ew", padx=20, pady=(0, 20))
+        input_frame.grid_columnconfigure(0, weight=1)
         
-        self.input_field = ctk.CTkEntry(input_frame, placeholder_text="メッセージを入力...",
-                                       font=(FONT_FAMILY, 16), height=40)
-        self.input_field.pack(side="left", fill="x", expand=True, padx=(0, 10))
+        self.input_field = ctk.CTkEntry(
+            input_frame,
+            placeholder_text="メッセージを入力...",
+            font=(FONT_FAMILY, 16),
+            height=40,
+        )
+        self.input_field.grid(row=0, column=0, sticky="ew", padx=(0, 10))
         self.input_field.bind("<Return>", lambda e: self.send_message())
         
-        send_btn = ctk.CTkButton(input_frame, text="送信", width=80,
-                                command=self.send_message,
-                                font=(FONT_FAMILY, 16))
-        send_btn.pack(side="right")
+        send_btn = ctk.CTkButton(
+            input_frame,
+            text="送信",
+            width=80,
+            command=self.send_message,
+            font=(FONT_FAMILY, 16),
+        )
+        send_btn.grid(row=0, column=1)
 
         help_box = ctk.CTkTextbox(info_tab, font=(FONT_FAMILY, 14), wrap="word")
         help_box.pack(fill="both", expand=True, padx=10, pady=10)
