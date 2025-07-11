@@ -13,6 +13,7 @@ from src.agent import ReActAgent, CoTAgent, ToTAgent, PresentationAgent
 from src.tools import get_default_tools
 from src.memory import ConversationMemory
 from src.vector_memory import VectorMemory
+from src.constants import TOT_LEVELS
 
 logger = logging.getLogger(__name__)
 
@@ -24,12 +25,7 @@ AGENT_INFO = {
     "presentation": "Generate HTML slides",
 }
 
-# Preset search levels for the Tree-of-Thoughts agent
-TOT_LEVELS = {
-    "LOW": (2, 2),
-    "MIDDLE": (3, 3),
-    "HIGH": (4, 4),
-}
+
 
 
 def positive_int(value: str) -> int:

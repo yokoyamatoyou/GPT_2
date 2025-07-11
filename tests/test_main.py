@@ -1,5 +1,6 @@
 import logging
 from src import main as src_main
+from src.constants import TOT_LEVELS
 
 
 def test_parse_args():
@@ -101,7 +102,7 @@ def test_parse_args_tot_option_validation():
 
 def test_parse_args_tot_level():
     args = src_main.parse_args(['--agent', 'tot', '--tot-level', 'MIDDLE'])
-    depth, breadth = src_main.TOT_LEVELS['MIDDLE']
+    depth, breadth = TOT_LEVELS['MIDDLE']
     assert args.depth == depth
     assert args.breadth == breadth
 

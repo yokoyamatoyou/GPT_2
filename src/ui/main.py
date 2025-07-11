@@ -20,6 +20,7 @@ from openai import OpenAI
 
 from src.agent import ReActAgent, CoTAgent, ToTAgent, PresentationAgent
 from src.main import create_evaluator, read_tot_env
+from src.constants import TOT_LEVELS
 from src.memory import ConversationMemory
 from src.tools import (
     get_web_scraper,
@@ -84,12 +85,8 @@ ICON_PATH = os.path.join(os.path.dirname(__file__), "resources", "app_icon.xbm")
 
 FONT_FAMILY = get_font_family()
 
-# Preset search parameters for the Tree-of-Thoughts agent
-TOT_LEVELS = {
-    "LOW": (2, 2),
-    "MIDDLE": (3, 3),
-    "HIGH": (4, 4),
-}
+# Preset search parameters for the Tree-of-Thoughts agent are defined in
+# :mod:`src.constants` as ``TOT_LEVELS``.
 
 class ChatGPTClient:
     def __init__(self):
