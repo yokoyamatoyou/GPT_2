@@ -164,8 +164,8 @@ python -m src.main --agent tot --depth 3 --breadth 4
 ```
 Alternatively set the defaults with the `TOT_DEPTH` and `TOT_BREADTH`
 environment variables. You can also specify `TOT_LEVEL` to pick one of the
-presets (`LOW`, `MIDDLE` or `HIGH`). Invalid values are ignored unless you run
-the ToT agent.
+presets (`LOW`, `MIDDLE`, `HIGH` or `EXTREME`). Invalid values are ignored
+unless you run the ToT agent.
 
 You can also select one of the GUI presets with `--tot-level`:
 
@@ -323,14 +323,14 @@ environment variables:
 
 - `TOT_DEPTH` – default max search depth when `--depth` is omitted (positive integer)
 - `TOT_BREADTH` – default number of branches per level when `--breadth` is omitted (positive integer)
-- `TOT_LEVEL` – choose one of the presets (`LOW`, `MIDDLE`, `HIGH`) when depth
-  and breadth options are not provided
+- `TOT_LEVEL` – choose one of the presets (`LOW`, `MIDDLE`, `HIGH`, `EXTREME`)
+  when depth and breadth options are not provided
 
 Invalid values are ignored unless `--agent tot` is used.
 
-In the GUI you can select **LOW**, **MIDDLE** or **HIGH** to adjust these
-parameters. The presets correspond to `(2,2)`, `(3,3)` and `(4,4)` for
-depth and breadth. Environment variables override the selection if set.
+In the GUI you can select **LOW**, **MIDDLE**, **HIGH** or **EXTREME** to adjust
+these parameters. The presets correspond to `(2,2)`, `(3,3)`, `(4,4)` and `(5,5)`
+for depth and breadth. Environment variables override the selection if set.
 
 ## Configuring Logging
 
