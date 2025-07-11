@@ -320,6 +320,8 @@ Invalid values are ignored unless `--agent tot` is used.
 
 Use `setup_logging` to send logs to both the console and optionally a file.
 Set the `AGENT_LOG_FILE` environment variable to define a default log path.
+You can also set `AGENT_LOG_LEVEL` to control the default log level when
+`--verbose` is not specified.
 
 ```python
 from src import setup_logging

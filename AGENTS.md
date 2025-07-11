@@ -21,7 +21,8 @@ When modifying this project, keep the following behaviors in mind:
 4. `create_llm` reads an optional `OPENAI_TIMEOUT` environment variable and passes it
    as the request timeout when calling the OpenAI API.
 5. `setup_logging` checks the `AGENT_LOG_FILE` environment variable to choose a
-   default file for log output.
+   default file for log output. The log level defaults to the value of
+   `AGENT_LOG_LEVEL` when provided.
 6. The command line runner accepts `--list-tools` to print available tool names
    and descriptions then exit.
 7. `get_default_tools()` returns the built-in tools used by the CLI and tests.
@@ -213,6 +214,7 @@ api\_key \= os.getenv("OPENAI\_API\_KEY")
 
 loggingモジュールを使用し、ログレベル（INFO, DEBUG, ERROR）を設定して、コンソールやファイルに出力できるようにします。
 - `AGENT_LOG_FILE` — `setup_logging` が環境変数から読み込むログ出力先のパスを指定できます。
+- `AGENT_LOG_LEVEL` — INFO や DEBUG などデフォルトのログレベルを指定できます。
 
 ### **2.2 フェーズ2：コアReActエージェントループの実装**
 

@@ -66,6 +66,7 @@ pytest
 
 `setup_logging` を使うとコンソールに加えて任意のファイルへログを書き出せます。
 `AGENT_LOG_FILE` 環境変数を指定すると、デフォルトで使用するログファイルを設定できます。
+`AGENT_LOG_LEVEL` を設定すると `--verbose` を使わない場合の既定ログレベルを変更できます。
 
 ```python
 from src import setup_logging
