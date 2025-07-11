@@ -23,7 +23,7 @@ def setup_logging(level: int = logging.INFO, log_file: Optional[str] = None) -> 
     root.addHandler(stream)
     file_path = log_file or os.getenv("AGENT_LOG_FILE")
     if file_path:
-        fh = logging.FileHandler(file_path)
+        fh = logging.FileHandler(file_path, encoding="utf-8")
         fh.setFormatter(formatter)
         root.addHandler(fh)
 
