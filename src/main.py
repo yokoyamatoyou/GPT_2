@@ -43,11 +43,19 @@ def positive_int(value: str) -> int:
 def read_tot_env() -> tuple[int | None, int | None]:
     """Return depth and breadth from environment variables if set and valid."""
 
+    level = os.getenv("TOT_LEVEL")
     depth = os.getenv("TOT_DEPTH")
     breadth = os.getenv("TOT_BREADTH")
 
     depth_val: int | None = None
     breadth_val: int | None = None
+
+    if level:
+        level_key = level.upper()
+        if level_key in TOT_LEVELS:
+            depth_val, breadth_val = TOT_LEVELS[level_key]
+        else:
+            raise SystemExit(f"Invalid TOT_LEVEL={level!r}")
 
     if depth is not None:
         try:

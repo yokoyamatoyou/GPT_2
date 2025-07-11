@@ -163,8 +163,9 @@ You can adjust the search parameters for the ToT agent using `--depth` and
 python -m src.main --agent tot --depth 3 --breadth 4
 ```
 Alternatively set the defaults with the `TOT_DEPTH` and `TOT_BREADTH`
-environment variables. Invalid values are ignored unless you run the ToT
-agent.
+environment variables. You can also specify `TOT_LEVEL` to pick one of the
+presets (`LOW`, `MIDDLE` or `HIGH`). Invalid values are ignored unless you run
+the ToT agent.
 
 You can also select one of the GUI presets with `--tot-level`:
 
@@ -322,6 +323,8 @@ environment variables:
 
 - `TOT_DEPTH` – default max search depth when `--depth` is omitted (positive integer)
 - `TOT_BREADTH` – default number of branches per level when `--breadth` is omitted (positive integer)
+- `TOT_LEVEL` – choose one of the presets (`LOW`, `MIDDLE`, `HIGH`) when depth
+  and breadth options are not provided
 
 Invalid values are ignored unless `--agent tot` is used.
 
