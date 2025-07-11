@@ -826,7 +826,13 @@ class ChatGPTClient:
         self.file_list_text.configure(state="normal")
         self.file_list_text.delete("1.0", "end")
         self.file_list_text.configure(state="disabled")
-        
+
+        # 既存の図プレビューをリセット
+        try:
+            self.clear_diagram()
+        except Exception:
+            logging.warning("Failed to clear diagram", exc_info=True)
+
         self.window.title("ChatGPT Desktop")
 
     def load_chat(self):
