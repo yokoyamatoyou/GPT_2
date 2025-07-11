@@ -47,3 +47,26 @@ def test_create_llm_bad_timeout(monkeypatch):
     llm = src_main.create_llm()
     llm("hi")
     assert "timeout" not in dummy.last_kwargs
+
+
+def test_create_llm_base_url(monkeypatch):
+    captured = {}
+
+    class DummyClient:
+        def __init__(self):
+            self.chat = self
+            self.completions = self
+
+        def create(self, model, messages, **kwargs):
+            return DummyResp()
+
+    def fake_openai(api_key, base_url=None):
+        captured["base_url"] = base_url
+        return DummyClient()
+
+    monkeypatch.setattr(src_main, "OpenAI", fake_openai)
+    monkeypatch.setenv("OPENAI_API_KEY", "x")
+    monkeypatch.setenv("OPENAI_BASE_URL", "https://example.com")
+    llm = src_main.create_llm()
+    llm("hi")
+    assert captured["base_url"] == "https://example.com"

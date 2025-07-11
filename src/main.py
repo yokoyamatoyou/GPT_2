@@ -82,7 +82,11 @@ def create_llm(*, log_usage: bool = False, model: str | None = None) -> callable
     except ValueError:
         logger.warning("Invalid OPENAI_TIMEOUT=%s, using default", timeout_str)
         timeout = None
-    client = OpenAI(api_key=api_key)
+    base_url = os.getenv("OPENAI_BASE_URL")
+    client_params = {"api_key": api_key}
+    if base_url:
+        client_params["base_url"] = base_url
+    client = OpenAI(**client_params)
 
     def llm(prompt: str) -> str:
         params = {
