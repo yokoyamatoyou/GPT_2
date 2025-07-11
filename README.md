@@ -40,9 +40,10 @@ echo "OPENAI_API_KEY=your_key_here" >> .env
   The GUI also uses this value as the initial model selection and includes
   `gpt-3.5-turbo` in the drop-down menu.
 - `OPENAI_TOKEN_PRICE` – price per token for usage cost logging
-- `OPENAI_TIMEOUT` – request timeout in seconds for OpenAI API calls
-- `PREFERRED_FONT` – preferred font family for the GUI (falls back to
-  `Meiryo` or `Helvetica` if unavailable)
+  - `OPENAI_TIMEOUT` – request timeout in seconds for OpenAI API calls
+  - `OPENAI_BASE_URL` – base URL for the OpenAI API (optional)
+  - `PREFERRED_FONT` – preferred font family for the GUI (falls back to
+    `Meiryo` or `Helvetica` if unavailable)
 
 ### 4. Launch the application
 
@@ -282,7 +283,8 @@ llm = create_llm(log_usage=True)
 
 Log records will include the token count and calculated cost.
 Set `OPENAI_TIMEOUT` to adjust the request timeout in seconds for each
-OpenAI API call. Use `0` to rely on the library default.
+OpenAI API call. Use `0` to rely on the library default. Set
+`OPENAI_BASE_URL` if you need to point the client at a custom endpoint.
 
 ## Web Scraper Settings
 
