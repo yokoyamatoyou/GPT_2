@@ -294,9 +294,11 @@ adjust these values with environment variables:
 - `WEB_SCRAPER_CACHE_TTL` – cache duration in seconds (default `3600`)
 - `WEB_SCRAPER_DELAY` – delay between HTTP requests in seconds (default `1.0`)
 - `WEB_SCRAPER_USER_AGENT` – value for the `User-Agent` header (default `Mozilla/5.0`)
+- `WEB_SCRAPER_TIMEOUT` – request timeout in seconds (default `10`)
 
-Invalid `WEB_SCRAPER_CACHE_TTL` or `WEB_SCRAPER_DELAY` values are ignored. A
-warning is logged and the defaults (`3600` and `1.0`) are used.
+Invalid `WEB_SCRAPER_CACHE_TTL`, `WEB_SCRAPER_DELAY` or `WEB_SCRAPER_TIMEOUT`
+values are ignored. A warning is logged and the defaults (`3600`, `1.0` and
+`10`) are used.
 
 Example:
 
