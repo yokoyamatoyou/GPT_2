@@ -24,6 +24,13 @@ AGENT_INFO = {
     "presentation": "Generate HTML slides",
 }
 
+# Preset search levels for the Tree-of-Thoughts agent
+TOT_LEVELS = {
+    "LOW": (2, 2),
+    "MIDDLE": (3, 3),
+    "HIGH": (4, 4),
+}
+
 
 def positive_int(value: str) -> int:
     """Return *value* as a positive ``int``.
@@ -162,6 +169,11 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
         help="Number of branches to keep at each depth for the ToT agent",
     )
     parser.add_argument(
+        "--tot-level",
+        choices=list(TOT_LEVELS.keys()),
+        help="Preset search level for the ToT agent",
+    )
+    parser.add_argument(
         "--log-file",
         help="Write logs to the specified file (overrides AGENT_LOG_FILE)",
     )
@@ -193,6 +205,12 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
 
     arg_list = args if args is not None else sys.argv[1:]
     if parsed.agent == "tot":
+        if parsed.tot_level:
+            level_depth, level_breadth = TOT_LEVELS[parsed.tot_level]
+            if "--depth" not in arg_list:
+                parsed.depth = level_depth
+            if "--breadth" not in arg_list:
+                parsed.breadth = level_breadth
         if "--depth" not in arg_list or "--breadth" not in arg_list:
             try:
                 depth_val, breadth_val = read_tot_env()

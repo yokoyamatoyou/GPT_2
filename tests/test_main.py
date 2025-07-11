@@ -99,6 +99,36 @@ def test_parse_args_tot_option_validation():
         src_main.parse_args(['--agent', 'tot', '--breadth', '-1'])
 
 
+def test_parse_args_tot_level():
+    args = src_main.parse_args(['--agent', 'tot', '--tot-level', 'MIDDLE'])
+    depth, breadth = src_main.TOT_LEVELS['MIDDLE']
+    assert args.depth == depth
+    assert args.breadth == breadth
+
+
+def test_parse_args_tot_level_env_override(monkeypatch):
+    monkeypatch.setenv('TOT_DEPTH', '5')
+    monkeypatch.setenv('TOT_BREADTH', '6')
+    args = src_main.parse_args(['--agent', 'tot', '--tot-level', 'LOW'])
+    assert args.depth == 5
+    assert args.breadth == 6
+
+
+def test_parse_args_tot_level_cli_override():
+    args = src_main.parse_args([
+        '--agent', 'tot', '--tot-level', 'LOW', '--depth', '9', '--breadth', '8'
+    ])
+    assert args.depth == 9
+    assert args.breadth == 8
+
+
+def test_parse_args_tot_level_ignored_for_other_agent():
+    args = src_main.parse_args(['--tot-level', 'HIGH'])
+    assert args.agent == 'react'
+    assert args.depth == 2
+    assert args.breadth == 2
+
+
 def test_main_uses_vector_memory(monkeypatch):
     created = {}
 

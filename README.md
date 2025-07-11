@@ -165,6 +165,14 @@ Alternatively set the defaults with the `TOT_DEPTH` and `TOT_BREADTH`
 environment variables. Invalid values are ignored unless you run the ToT
 agent.
 
+You can also select one of the GUI presets with `--tot-level`:
+
+```bash
+python -m src.main --agent tot --tot-level MIDDLE
+```
+This corresponds to depth and breadth `(3,3)` unless overridden by
+environment variables or explicit `--depth`/`--breadth` options.
+
 For example:
 
 ```bash
