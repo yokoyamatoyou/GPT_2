@@ -19,3 +19,9 @@ def test_setup_logging_uses_env_var(tmp_path, monkeypatch):
     with open(log_file, "r", encoding="utf-8") as f:
         data = f.read()
     assert "world" in data
+
+
+def test_setup_logging_level_from_env(monkeypatch):
+    monkeypatch.setenv("AGENT_LOG_LEVEL", "DEBUG")
+    setup_logging()
+    assert logging.getLogger().level == logging.DEBUG

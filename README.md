@@ -316,10 +316,16 @@ environment variables:
 
 Invalid values are ignored unless `--agent tot` is used.
 
+In the GUI you can select **LOW**, **MIDDLE** or **HIGH** to adjust these
+parameters. The presets correspond to `(2,2)`, `(3,3)` and `(4,4)` for
+depth and breadth. Environment variables override the selection if set.
+
 ## Configuring Logging
 
 Use `setup_logging` to send logs to both the console and optionally a file.
 Set the `AGENT_LOG_FILE` environment variable to define a default log path.
+You can also set `AGENT_LOG_LEVEL` to control the default log level when
+`--verbose` is not specified.
 
 ```python
 from src import setup_logging

@@ -21,7 +21,8 @@ When modifying this project, keep the following behaviors in mind:
 4. `create_llm` reads an optional `OPENAI_TIMEOUT` environment variable and passes it
    as the request timeout when calling the OpenAI API.
 5. `setup_logging` checks the `AGENT_LOG_FILE` environment variable to choose a
-   default file for log output.
+   default file for log output. The log level defaults to the value of
+   `AGENT_LOG_LEVEL` when provided.
 6. The command line runner accepts `--list-tools` to print available tool names
    and descriptions then exit.
 7. `get_default_tools()` returns the built-in tools used by the CLI and tests.
@@ -206,6 +207,9 @@ api\_key \= os.getenv("OPENAI\_API\_KEY")
 - `TOT_DEPTH` \- ToT エージェントのデフォルト探索深さ。`--depth` が省略された場合に使用されます。正の整数である必要があります。
 - `TOT_BREADTH` \- ToT エージェントの各階層で保持する分岐数のデフォルト値。正の整数である必要があります。
 - これらの環境変数が無効な値の場合でも、デフォルトのReActエージェントを使用する限り無視されます。
+- GUI では ToT の探索レベルを **LOW**, **MIDDLE**, **HIGH** から選択可能です。
+ それぞれ `(2,2)`, `(3,3)`, `(4,4)` の深さと分岐数を使用します。環境変数が設定
+ されていればそちらが優先されます。
 
 #### **ロギングとデバッグ**
 
@@ -213,6 +217,7 @@ api\_key \= os.getenv("OPENAI\_API\_KEY")
 
 loggingモジュールを使用し、ログレベル（INFO, DEBUG, ERROR）を設定して、コンソールやファイルに出力できるようにします。
 - `AGENT_LOG_FILE` — `setup_logging` が環境変数から読み込むログ出力先のパスを指定できます。
+- `AGENT_LOG_LEVEL` — INFO や DEBUG などデフォルトのログレベルを指定できます。
 
 ### **2.2 フェーズ2：コアReActエージェントループの実装**
 

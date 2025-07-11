@@ -208,7 +208,7 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> None:
     args = parse_args(argv)
-    level = logging.DEBUG if args.verbose else logging.INFO
+    level = logging.DEBUG if args.verbose else None
     setup_logging(level=level, log_file=args.log_file)
     if args.list_tools:
         for t in get_default_tools():

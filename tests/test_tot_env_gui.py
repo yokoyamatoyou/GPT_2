@@ -12,6 +12,15 @@ def _client():
     c.agent_tools = []
     c.memory = None
     c.messages = []
+    class DummyVar:
+        def __init__(self, value="LOW"):
+            self._val = value
+        def get(self):
+            return self._val
+        def set(self, value):
+            self._val = value
+
+    c.tot_level_var = DummyVar("LOW")
     return c
 
 
@@ -47,3 +56,23 @@ def test_run_agent_invalid_tot_env(monkeypatch):
     while not client.response_queue.empty():
         outputs.append(client.response_queue.get())
     assert any("エラー" in o for o in outputs)
+
+
+def test_run_agent_uses_tot_level(monkeypatch):
+    client = _client()
+    created = {}
+
+    def dummy_tot(llm, evaluate, *, max_depth, breadth, memory=None):
+        created["depth"] = max_depth
+        created["breadth"] = breadth
+        return SimpleNamespace(run_iter=lambda q: [])
+
+    monkeypatch.setattr(GPT, "ToTAgent", dummy_tot)
+    monkeypatch.setattr(GPT, "create_evaluator", lambda llm: None)
+
+    client.tot_level_var.set("MIDDLE")
+    client.run_agent("tot", "q")
+
+    depth, breadth = GPT.TOT_LEVELS["MIDDLE"]
+    assert created["depth"] == depth
+    assert created["breadth"] == breadth

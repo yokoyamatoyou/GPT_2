@@ -13,6 +13,14 @@ def _client():
     c.memory = None
     c.messages = []
     c.window = SimpleNamespace(after=lambda *a, **k: None)
+    class DummyVar:
+        def __init__(self, value="LOW"):
+            self._val = value
+        def get(self):
+            return self._val
+        def set(self, value):
+            self._val = value
+    c.tot_level_var = DummyVar("LOW")
 
     class DummyText:
         def __init__(self):

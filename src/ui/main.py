@@ -78,6 +78,13 @@ ICON_PATH = os.path.join(os.path.dirname(__file__), "resources", "app_icon.xbm")
 
 FONT_FAMILY = get_font_family()
 
+# Preset search parameters for the Tree-of-Thoughts agent
+TOT_LEVELS = {
+    "LOW": (2, 2),
+    "MIDDLE": (3, 3),
+    "HIGH": (4, 4),
+}
+
 class ChatGPTClient:
     def __init__(self):
         """Initialize the main window and OpenAI client."""
@@ -122,6 +129,7 @@ class ChatGPTClient:
         self.tot_start = None
         self._diagram_path: str | None = None
         self.agent_var = ctk.StringVar(value="chatgpt")
+        self.tot_level_var = ctk.StringVar(value="LOW")
         self.agent_tools = [
             get_web_scraper(),
             get_sqlite_tool(),
@@ -231,6 +239,18 @@ class ChatGPTClient:
             width=250,
         )
         agent_menu.pack(pady=(0, 20))
+
+        tot_label = ctk.CTkLabel(left_panel, text="ToT探索レベル",
+                                   font=(FONT_FAMILY, 16))
+        tot_label.pack(pady=(10, 5))
+
+        tot_menu = ctk.CTkOptionMenu(
+            left_panel,
+            values=["LOW", "MIDDLE", "HIGH"],
+            variable=self.tot_level_var,
+            width=250,
+        )
+        tot_menu.pack(pady=(0, 20))
         
         # ファイルアップロードボタン
         upload_btn = ctk.CTkButton(left_panel, text="ファイルをアップロード",
@@ -654,8 +674,8 @@ class ChatGPTClient:
             elif agent_type == "cot":
                 agent = CoTAgent(self.simple_llm, self.memory)
             elif agent_type == "tot":
-                depth = 2
-                breadth = 2
+                level = self.tot_level_var.get()
+                depth, breadth = TOT_LEVELS.get(level, (2, 2))
                 try:
                     env_depth, env_breadth = read_tot_env()
                     if env_depth is not None:
