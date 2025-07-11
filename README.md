@@ -42,8 +42,9 @@ echo "OPENAI_API_KEY=your_key_here" >> .env
 - `OPENAI_TOKEN_PRICE` – price per token for usage cost logging
   - `OPENAI_TIMEOUT` – request timeout in seconds for OpenAI API calls
   - `OPENAI_BASE_URL` – base URL for the OpenAI API (optional)
-  - `PREFERRED_FONT` – preferred font family for the GUI (falls back to
-    `Meiryo` or `Helvetica` if unavailable)
+  - `PREFERRED_FONT` – preferred font family or comma-separated list of
+    candidates for the GUI (falls back to `Meiryo` or `Helvetica` if none are
+    available)
 
 ### 4. Launch the application
 
