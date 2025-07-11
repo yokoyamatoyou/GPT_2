@@ -1,6 +1,7 @@
 from types import SimpleNamespace
 import queue
 from src.ui import main as GPT
+from src.constants import TOT_LEVELS
 
 ChatGPTClient = GPT.ChatGPTClient
 
@@ -73,6 +74,6 @@ def test_run_agent_uses_tot_level(monkeypatch):
     client.tot_level_var.set("MIDDLE")
     client.run_agent("tot", "q")
 
-    depth, breadth = GPT.TOT_LEVELS["MIDDLE"]
+    depth, breadth = TOT_LEVELS["MIDDLE"]
     assert created["depth"] == depth
     assert created["breadth"] == breadth
