@@ -17,6 +17,7 @@ _CACHE_TTL = 3600
 _ROBOTS: Dict[str, RobotFileParser] = {}
 _LAST_REQUEST_TIME = 0.0
 _DELAY = 1.0
+_TIMEOUT = 10.0
 _LOCK = threading.RLock()
 # Default headers for all HTTP requests
 _HEADERS = {"User-Agent": "Mozilla/5.0"}
@@ -28,13 +29,15 @@ def load_settings() -> None:
     """Load configuration from environment variables.
 
     Invalid ``WEB_SCRAPER_CACHE_TTL`` or ``WEB_SCRAPER_DELAY`` values fall back
-    to the defaults and trigger a warning.
+    to the defaults and trigger a warning. ``WEB_SCRAPER_TIMEOUT`` defines the
+    request timeout in seconds (default ``10``).
     """
 
-    global _CACHE_TTL, _DELAY, _HEADERS
+    global _CACHE_TTL, _DELAY, _HEADERS, _TIMEOUT
 
     ttl_str = os.getenv("WEB_SCRAPER_CACHE_TTL", "3600")
     delay_str = os.getenv("WEB_SCRAPER_DELAY", "1.0")
+    timeout_str = os.getenv("WEB_SCRAPER_TIMEOUT", "10")
 
     try:
         _CACHE_TTL = int(ttl_str)
@@ -51,6 +54,14 @@ def load_settings() -> None:
             "Invalid WEB_SCRAPER_DELAY=%s, using default 1.0", delay_str
         )
         _DELAY = 1.0
+
+    try:
+        _TIMEOUT = float(timeout_str)
+    except ValueError:
+        logger.warning(
+            "Invalid WEB_SCRAPER_TIMEOUT=%s, using default 10", timeout_str
+        )
+        _TIMEOUT = 10.0
 
     _HEADERS = {"User-Agent": os.getenv("WEB_SCRAPER_USER_AGENT", "Mozilla/5.0")}
 
@@ -87,7 +98,7 @@ def scrape_website_content(url: str, max_chars: int = 1000) -> str:
             robots_url = urljoin(base, "/robots.txt")
             try:
                 _respect_delay()
-                resp = requests.get(robots_url, headers=_HEADERS, timeout=5)
+                resp = requests.get(robots_url, headers=_HEADERS, timeout=_TIMEOUT)
                 if resp.status_code == 200:
                     rp.parse(resp.text.splitlines())
                 else:
@@ -106,7 +117,7 @@ def scrape_website_content(url: str, max_chars: int = 1000) -> str:
         try:
             _respect_delay()
             response = requests.get(
-                url, headers=_HEADERS, timeout=10
+                url, headers=_HEADERS, timeout=_TIMEOUT
             )
             response.raise_for_status()
         except Exception as e:

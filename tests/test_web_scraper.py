@@ -195,6 +195,48 @@ def test_custom_user_agent(monkeypatch):
         web_scraper.load_settings()
 
 
+def test_custom_timeout(monkeypatch):
+    expected = 5.5
+
+    def mock_get(url, **kwargs):
+        assert kwargs["timeout"] == expected
+
+        class Resp:
+            status_code = 200
+
+            def __init__(self, content):
+                self._content = content
+
+            def raise_for_status(self):
+                pass
+
+            @property
+            def content(self):
+                return self._content.encode("utf-8")
+
+            @property
+            def text(self):
+                return self._content
+
+        if url.endswith("robots.txt"):
+            return Resp("User-agent: *\nAllow: /")
+        return Resp("<html><body><main>Hi</main></body></html>")
+
+    import requests
+    monkeypatch.setattr(requests, "get", mock_get)
+    monkeypatch.setenv("WEB_SCRAPER_TIMEOUT", str(expected))
+    web_scraper._CACHE.clear()
+    web_scraper._ROBOTS.clear()
+    web_scraper.load_settings()
+
+    try:
+        text = web_scraper.scrape_website_content("http://example.com")
+        assert text == "Hi"
+    finally:
+        monkeypatch.delenv("WEB_SCRAPER_TIMEOUT", raising=False)
+        web_scraper.load_settings()
+
+
 def test_concurrent_calls(monkeypatch):
     html = "<html><body><main>Hi</main></body></html>"
     call_count = {"n": 0}
