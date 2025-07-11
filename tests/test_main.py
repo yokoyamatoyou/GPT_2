@@ -115,6 +115,21 @@ def test_parse_args_tot_level_env_override(monkeypatch):
     assert args.breadth == 6
 
 
+def test_parse_args_tot_level_env_var(monkeypatch):
+    monkeypatch.setenv('TOT_LEVEL', 'HIGH')
+    args = src_main.parse_args(['--agent', 'tot'])
+    depth, breadth = TOT_LEVELS['HIGH']
+    assert args.depth == depth
+    assert args.breadth == breadth
+
+
+def test_parse_args_tot_level_env_invalid(monkeypatch):
+    import pytest
+    monkeypatch.setenv('TOT_LEVEL', 'WRONG')
+    with pytest.raises(SystemExit):
+        src_main.parse_args(['--agent', 'tot'])
+
+
 def test_parse_args_tot_level_cli_override():
     args = src_main.parse_args([
         '--agent', 'tot', '--tot-level', 'LOW', '--depth', '9', '--breadth', '8'

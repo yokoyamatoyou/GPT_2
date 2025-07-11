@@ -77,3 +77,37 @@ def test_run_agent_uses_tot_level(monkeypatch):
     depth, breadth = TOT_LEVELS["MIDDLE"]
     assert created["depth"] == depth
     assert created["breadth"] == breadth
+
+
+def test_run_agent_tot_level_env(monkeypatch):
+    client = _client()
+    created = {}
+
+    def dummy_tot(llm, evaluate, *, max_depth, breadth, memory=None):
+        created["depth"] = max_depth
+        created["breadth"] = breadth
+        return SimpleNamespace(run_iter=lambda q: [])
+
+    monkeypatch.setattr(GPT, "ToTAgent", dummy_tot)
+    monkeypatch.setattr(GPT, "create_evaluator", lambda llm: None)
+    monkeypatch.setenv("TOT_LEVEL", "HIGH")
+
+    client.run_agent("tot", "q")
+
+    depth, breadth = TOT_LEVELS["HIGH"]
+    assert created["depth"] == depth
+    assert created["breadth"] == breadth
+
+
+def test_run_agent_tot_level_env_invalid(monkeypatch):
+    client = _client()
+
+    monkeypatch.setattr(GPT, "ToTAgent", lambda *a, **k: SimpleNamespace(run_iter=lambda q: []))
+    monkeypatch.setattr(GPT, "create_evaluator", lambda llm: None)
+    monkeypatch.setenv("TOT_LEVEL", "WRONG")
+
+    client.run_agent("tot", "q")
+    outputs = []
+    while not client.response_queue.empty():
+        outputs.append(client.response_queue.get())
+    assert any("エラー" in o for o in outputs)
