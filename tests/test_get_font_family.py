@@ -50,3 +50,24 @@ def test_get_font_family_env_missing(monkeypatch):
         assert GPT.get_font_family() == "Helvetica"
     finally:
         monkeypatch.delenv("PREFERRED_FONT", raising=False)
+
+
+def test_get_font_family_env_fallback(monkeypatch):
+    fonts = ["Meiryo", "Helvetica"]
+
+    class DummyTk:
+        def __init__(self):
+            self.tk = SimpleNamespace(call=lambda *a: fonts)
+
+        def withdraw(self):
+            pass
+
+        def destroy(self):
+            pass
+
+    monkeypatch.setattr(tkinter, "Tk", DummyTk)
+    monkeypatch.setenv("PREFERRED_FONT", "Missing1, Missing2")
+    try:
+        assert GPT.get_font_family() == "Meiryo"
+    finally:
+        monkeypatch.delenv("PREFERRED_FONT", raising=False)

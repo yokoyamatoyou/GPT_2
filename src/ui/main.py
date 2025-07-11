@@ -40,11 +40,10 @@ def get_font_family(preferred: str = "Meiryo") -> str:
     falling back to the ``preferred`` parameter and finally ``Helvetica``.
     """
     env_font = os.getenv("PREFERRED_FONT")
-    candidates = [preferred]
+    candidates = []
     if env_font:
-        candidates = [f.strip() for f in env_font.split(",") if f.strip()]
-    else:
-        candidates = [preferred]
+        candidates.extend([f.strip() for f in env_font.split(",") if f.strip()])
+    candidates.append(preferred)
     try:
         root = tkinter.Tk()
         root.withdraw()
