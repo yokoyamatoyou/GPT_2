@@ -60,5 +60,10 @@ class ConversationMemory(MessageMemory):
 
     def search(self, query: str, top_k: int = 3) -> List[str]:
         """Return messages containing the query text."""
-        results = [m["content"] for m in self.messages if query in m["content"]]
+        query_lower = query.lower()
+        results = [
+            m["content"]
+            for m in self.messages
+            if query_lower in m["content"].lower()
+        ]
         return results[:top_k]
