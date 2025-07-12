@@ -114,8 +114,12 @@ class ChatGPTClient:
             return
 
         logging.info("Loaded OpenAI API key from environment")
-        
-        self.client = OpenAI(api_key=api_key)
+
+        base_url = os.getenv("OPENAI_BASE_URL")
+        if base_url:
+            self.client = OpenAI(api_key=api_key, base_url=base_url)
+        else:
+            self.client = OpenAI(api_key=api_key)
 
         timeout_str = os.getenv("OPENAI_TIMEOUT", "0")
         try:
@@ -218,6 +222,7 @@ class ChatGPTClient:
             left_panel,
             values=[
                 "gpt-3.5-turbo",
+                "gpt-4o",
                 "gpt-4.1-mini-2025-04-14",
                 "gpt-4.1-nano-2025-04-14",
                 "gpt-4.1-2025-04-14",

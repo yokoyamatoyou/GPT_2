@@ -38,10 +38,10 @@ echo "OPENAI_API_KEY=your_key_here" >> .env
 
 - `OPENAI_MODEL` – default model to use (defaults to `gpt-3.5-turbo`).
   The GUI also uses this value as the initial model selection and includes
-  `gpt-3.5-turbo` in the drop-down menu.
+  `gpt-3.5-turbo` and `gpt-4o` in the drop-down menu.
 - `OPENAI_TOKEN_PRICE` – price per token for usage cost logging
   - `OPENAI_TIMEOUT` – request timeout in seconds for OpenAI API calls
-  - `OPENAI_BASE_URL` – base URL for the OpenAI API (optional)
+  - `OPENAI_BASE_URL` – base URL for the OpenAI API (optional, also respected by the GUI)
   - `PREFERRED_FONT` – preferred font family or comma-separated list of
     candidates for the GUI (falls back to `Meiryo` or `Helvetica` if none are
     available)
