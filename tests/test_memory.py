@@ -27,3 +27,11 @@ def test_save_filename_no_directory(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     mem.save("conv.json")
     assert (tmp_path / "conv.json").exists()
+
+
+def test_search_case_insensitive():
+    mem = ConversationMemory()
+    mem.add("user", "Hello World")
+    mem.add("assistant", "How are you?")
+    results = mem.search("hello")
+    assert "Hello World" in results
