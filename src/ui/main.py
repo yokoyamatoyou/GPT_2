@@ -255,7 +255,7 @@ class ChatGPTClient:
 
         tot_menu = ctk.CTkOptionMenu(
             left_panel,
-            values=["LOW", "MIDDLE", "HIGH"],
+            values=list(TOT_LEVELS.keys()),
             variable=self.tot_level_var,
             width=250,
         )
