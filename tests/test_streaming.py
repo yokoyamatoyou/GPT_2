@@ -63,6 +63,7 @@ def test_get_response_stream(monkeypatch):
 def test_generate_title_logs_error(caplog):
     client = ChatGPTClient.__new__(ChatGPTClient)
     client.window = SimpleNamespace(title=lambda *a, **k: None)
+    client.response_queue = queue.Queue()
 
     def raise_err(*a, **k):
         raise RuntimeError("boom")
@@ -76,6 +77,7 @@ def test_generate_title_logs_error(caplog):
 
     assert "boom" in caplog.text
     assert client.current_title
+    assert client.response_queue.get().startswith("__TITLE__")
 
 
 def test_get_response_tool_calls(monkeypatch):
