@@ -123,6 +123,14 @@ def test_parse_args_tot_level_env_var(monkeypatch):
     assert args.breadth == breadth
 
 
+def test_parse_args_tot_level_extreme(monkeypatch):
+    monkeypatch.setenv('TOT_LEVEL', 'EXTREME')
+    args = src_main.parse_args(['--agent', 'tot'])
+    depth, breadth = TOT_LEVELS['EXTREME']
+    assert args.depth == depth
+    assert args.breadth == breadth
+
+
 def test_parse_args_tot_level_env_invalid(monkeypatch):
     import pytest
     monkeypatch.setenv('TOT_LEVEL', 'WRONG')
