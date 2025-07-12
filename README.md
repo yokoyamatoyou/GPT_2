@@ -36,8 +36,9 @@ echo "OPENAI_API_KEY=your_key_here" >> .env
 
 -`create_llm` reads additional variables if present:
 
-- `OPENAI_MODEL` – default model to use (defaults to `gpt-3.5-turbo`).
+- `OPENAI_MODEL` – default model to use (defaults to `gpt-4.1-mini-2025-04-14`).
   The GUI also uses this value as the initial model selection and includes
+  `gpt-4.1-mini-2025-04-14`, `gpt-4.1-nano-2025-04-14`, `gpt-4.1-2025-04-14`,
   `gpt-3.5-turbo` and `gpt-4o` in the drop-down menu.
 - `OPENAI_TOKEN_PRICE` – price per token for usage cost logging
   - `OPENAI_TIMEOUT` – request timeout in seconds for OpenAI API calls
@@ -286,7 +287,7 @@ The `create_llm` helper can log the number of tokens consumed and estimate the
 cost of each OpenAI API call. Set `OPENAI_TOKEN_PRICE` in your environment to the
 price per token (e.g. `0.000002`) and pass `log_usage=True` when creating the
 LLM. The cost is calculated as `token_count * OPENAI_TOKEN_PRICE`. The model used
-for completion defaults to `gpt-3.5-turbo` but can be overridden with
+for completion defaults to `gpt-4.1-mini-2025-04-14` but can be overridden with
 `OPENAI_MODEL`:
 
 ```python

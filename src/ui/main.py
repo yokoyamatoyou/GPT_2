@@ -102,7 +102,7 @@ class ChatGPTClient:
             logging.warning("Failed to set window icon")
 
         # モデルの初期値を環境変数から読み込む
-        default_model = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
+        default_model = os.getenv("OPENAI_MODEL", "gpt-4.1-mini-2025-04-14")
         self.model_var = ctk.StringVar(value=default_model)
         
         # OpenAI クライアントの初期化

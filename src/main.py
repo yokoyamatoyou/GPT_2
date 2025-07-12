@@ -85,7 +85,7 @@ def create_llm(*, log_usage: bool = False, model: str | None = None) -> callable
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise RuntimeError("OPENAI_API_KEY not set")
-    model = model or os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
+    model = model or os.getenv("OPENAI_MODEL", "gpt-4.1-mini-2025-04-14")
     token_price = float(os.getenv("OPENAI_TOKEN_PRICE", "0"))
     timeout_str = os.getenv("OPENAI_TIMEOUT", "0")
     try:
