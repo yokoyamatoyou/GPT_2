@@ -7,6 +7,7 @@ import queue
 import re
 import shutil
 import threading
+import functools
 
 import customtkinter as ctk
 import tkinter
@@ -673,8 +674,8 @@ class ChatGPTClient:
         except Exception as e:
             self.response_queue.put(f"\n\nエラー: {str(e)}\n")
 
-    def simple_llm(self, prompt: str) -> str:
-        """Call the OpenAI API synchronously and return the message text."""
+    def simple_llm(self, prompt: str, *, stream: bool = False, prefix: str = "") -> str:
+        """Call the OpenAI API and optionally stream tokens to the queue."""
         params = {
             "model": self.model_var.get(),
             "messages": [{"role": "user", "content": prompt}],
@@ -683,6 +684,19 @@ class ChatGPTClient:
         timeout_val = getattr(self, "timeout", None)
         if timeout_val is not None:
             params["timeout"] = timeout_val
+        if stream:
+            params["stream"] = True
+            result = ""
+            try:
+                for chunk in self.client.chat.completions.create(**params):
+                    delta = chunk.choices[0].delta
+                    if getattr(delta, "content", None) is not None:
+                        text = delta.content
+                        result += text
+                        self.response_queue.put(prefix + text)
+            except Exception as exc:
+                logging.exception("Streaming call failed: %s", exc)
+            return result
         resp = self.client.chat.completions.create(**params)
         return resp.choices[0].message.content
 
@@ -691,9 +705,13 @@ class ChatGPTClient:
         try:
             self.response_queue.put("Assistant: ")
             if agent_type == "react":
-                agent = ReActAgent(self.simple_llm, self.agent_tools, self.memory)
+                agent = ReActAgent(
+                    functools.partial(self.simple_llm, stream=True),
+                    self.agent_tools,
+                    self.memory,
+                )
             elif agent_type == "cot":
-                agent = CoTAgent(self.simple_llm, self.memory)
+                agent = CoTAgent(functools.partial(self.simple_llm, stream=True), self.memory)
             elif agent_type == "tot":
                 level = self.tot_level_var.get()
                 depth, breadth = TOT_LEVELS.get(level, (2, 2))
@@ -708,7 +726,7 @@ class ChatGPTClient:
                     return
                 evaluator = create_evaluator(self.simple_llm)
                 agent = ToTAgent(
-                    self.simple_llm,
+                    functools.partial(self.simple_llm, stream=True, prefix="__TOT__"),
                     evaluator,
                     max_depth=depth,
                     breadth=breadth,
@@ -725,8 +743,6 @@ class ChatGPTClient:
                 for step in agent.run_iter(question):
                     if step.startswith("最終的な答え:"):
                         final_answer = step[len("最終的な答え:"):].strip()
-                    else:
-                        self.response_queue.put("__TOT__" + step + "\n")
                 self.response_queue.put("__TOT_END__" + final_answer + "\n")
                 self.messages.append({"role": "user", "content": question})
                 self.messages.append({"role": "assistant", "content": final_answer})
@@ -738,7 +754,6 @@ class ChatGPTClient:
                 response_text = ""
                 for step in agent.run_iter(question):
                     response_text += step + "\n"
-                    self.response_queue.put(step + "\n")
                 self.messages.append({"role": "user", "content": question})
                 self.messages.append({"role": "assistant", "content": response_text})
                 match = re.search(r"(/[^\s]+\.png)", response_text)
@@ -768,14 +783,14 @@ class ChatGPTClient:
             if timeout_val is not None:
                 params["timeout"] = timeout_val
             response = self.client.chat.completions.create(**params)
-            
+
             self.current_title = response.choices[0].message.content.strip()
-            self.window.title(f"ChatGPT Desktop - {self.current_title}")
+            self.response_queue.put(f"__TITLE__{self.current_title}")
             
         except Exception:
             logging.exception("Failed to generate title")
             self.current_title = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            self.window.title(f"ChatGPT Desktop - {self.current_title}")  # エラー時もタイトル設定
+            self.response_queue.put(f"__TITLE__{self.current_title}")
     
     def save_conversation(self, show_popup: bool = True):
         """会話をJSONファイルとして保存."""
@@ -948,6 +963,10 @@ class ChatGPTClient:
         try:
             while True:
                 item = self.response_queue.get_nowait()
+                if item.startswith("__TITLE__"):
+                    title = item[len("__TITLE__"):]
+                    self.window.title(f"ChatGPT Desktop - {title}")
+                    continue
                 if item.startswith("__DIAGRAM__"):
                     self.display_diagram(item[len("__DIAGRAM__"):])
                     continue
