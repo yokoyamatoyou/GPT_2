@@ -385,6 +385,14 @@ class ChatGPTClient:
         )
         send_btn.grid(row=0, column=1)
 
+        # thinking indicator
+        self.progress = ctk.CTkProgressBar(
+            input_frame,
+            mode="indeterminate",
+        )
+        self.progress.grid(row=1, column=0, columnspan=2, sticky="ew", pady=(5, 0))
+        self.progress.stop()
+
         help_box = ctk.CTkTextbox(info_tab, font=(FONT_FAMILY, 14), wrap="word")
         help_box.pack(fill="both", expand=True, padx=10, pady=10)
         help_text = (
@@ -510,9 +518,16 @@ class ChatGPTClient:
         user_message = self.input_field.get().strip()
         if not user_message:
             return
-        
+
         # メッセージをクリア
         self.input_field.delete(0, "end")
+
+        if hasattr(self, "progress"):
+            try:
+                self.progress.stop()
+                self.progress.start()
+            except Exception:
+                pass
         
         # ユーザーメッセージを表示
         self.chat_display.configure(state="normal")
@@ -520,6 +535,8 @@ class ChatGPTClient:
         self.chat_display.insert("end", f"\nYou: {user_message}\n\n")
         if start is not None and hasattr(self.chat_display, "tag_add"):
             end = self.chat_display.index("end")
+            if hasattr(self.chat_display, "tag_remove"):
+                self.chat_display.tag_remove("assistant_msg", start, end)
             self.chat_display.tag_add("user_msg", start, end)
         self.chat_display.see("end")
         self.chat_display.configure(state="disabled")
@@ -907,6 +924,8 @@ class ChatGPTClient:
             if start is not None and hasattr(self.chat_display, "tag_add"):
                 end = self.chat_display.index("end")
                 tag = "user_msg" if role == "user" else "assistant_msg"
+                if role == "user" and hasattr(self.chat_display, "tag_remove"):
+                    self.chat_display.tag_remove("assistant_msg", start, end)
                 self.chat_display.tag_add(tag, start, end)
         self.chat_display.configure(state="disabled")
 
@@ -976,6 +995,11 @@ class ChatGPTClient:
                         kwargs={"show_popup": False},
                         daemon=True,
                     ).start()
+                    if hasattr(self, "progress"):
+                        try:
+                            self.progress.stop()
+                        except Exception:
+                            pass
                     continue
                 if item == "__TOT_START__":
                     self.tot_start = None
@@ -996,14 +1020,19 @@ class ChatGPTClient:
                     self.chat_display.insert("end", final)
                     if self.assistant_start is not None and final.endswith("\n") and hasattr(self.chat_display, "tag_add"):
                         end = self.chat_display.index("end")
-                        self.chat_display.tag_add("assistant_msg", self.assistant_start, end)
-                        self.assistant_start = None
+                    self.chat_display.tag_add("assistant_msg", self.assistant_start, end)
+                    self.assistant_start = None
                 else:
                     self.chat_display.insert("end", item)
                     if self.assistant_start is not None and item.endswith("\n") and hasattr(self.chat_display, "tag_add"):
                         end = self.chat_display.index("end")
                         self.chat_display.tag_add("assistant_msg", self.assistant_start, end)
                         self.assistant_start = None
+                if "エラー" in item and hasattr(self, "progress"):
+                    try:
+                        self.progress.stop()
+                    except Exception:
+                        pass
                 self.chat_display.see("end")
                 self.chat_display.configure(state="disabled")
         except queue.Empty:
