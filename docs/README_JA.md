@@ -18,7 +18,7 @@
    cp .env.example .env
    echo "OPENAI_API_KEY=your_key_here" >> .env
    ```
-  必要に応じて `OPENAI_MODEL` や `OPENAI_TIMEOUT`、`PREFERRED_FONT` などの環境変数も指定できます。`PREFERRED_FONT` はカンマ区切りで複数の候補を指定できます。
+  必要に応じて `OPENAI_MODEL` や `OPENAI_TIMEOUT`、`OPENAI_BASE_URL`、`PREFERRED_FONT` などの環境変数も指定できます。`PREFERRED_FONT` はカンマ区切りで複数の候補を指定できます。
 
 ## 2. アプリケーションの起動
 
