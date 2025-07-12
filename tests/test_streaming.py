@@ -172,3 +172,32 @@ def test_diagram_preview_unix(monkeypatch):
 def test_diagram_preview_windows(monkeypatch):
     out = _run_response_with_text(r"see C:\tmp\x.png", monkeypatch)
     assert "__DIAGRAM__C:\\tmp\\x.png" in out
+
+
+
+def _run_tot_with_final(text, monkeypatch):
+    client = _client()
+    client.memory = None
+    client.agent_tools = []
+    client.tot_level_var = SimpleNamespace(get=lambda: "LOW")
+
+    class DummyTot:
+        def run_iter(self, q):
+            yield f"最終的な答え: {text}"
+
+    monkeypatch.setattr(GPT, "ToTAgent", lambda *a, **k: DummyTot())
+    monkeypatch.setattr(GPT, "create_evaluator", lambda llm: None)
+    monkeypatch.setattr(GPT.os.path, "isfile", lambda p: True)
+
+    client.run_agent("tot", "q")
+
+    items = []
+    while not client.response_queue.empty():
+        items.append(client.response_queue.get())
+    return items
+
+
+def test_tot_diagram_path_with_spaces(monkeypatch):
+    out = _run_tot_with_final("/tmp/my diagram.png", monkeypatch)
+    assert "__DIAGRAM__/tmp/my diagram.png" in out
+
