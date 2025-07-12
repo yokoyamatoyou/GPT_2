@@ -1018,10 +1018,16 @@ class ChatGPTClient:
                         self.chat_display.delete(self.tot_start, "end")
                         self.tot_start = None
                     self.chat_display.insert("end", final)
-                    if self.assistant_start is not None and final.endswith("\n") and hasattr(self.chat_display, "tag_add"):
+                    if (
+                        self.assistant_start is not None
+                        and final.endswith("\n")
+                        and hasattr(self.chat_display, "tag_add")
+                    ):
                         end = self.chat_display.index("end")
-                    self.chat_display.tag_add("assistant_msg", self.assistant_start, end)
-                    self.assistant_start = None
+                        self.chat_display.tag_add(
+                            "assistant_msg", self.assistant_start, end
+                        )
+                        self.assistant_start = None
                 else:
                     self.chat_display.insert("end", item)
                     if self.assistant_start is not None and item.endswith("\n") and hasattr(self.chat_display, "tag_add"):
