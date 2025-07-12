@@ -505,7 +505,8 @@ class ChatGPTClient:
                         result += f"行{i+1}: {row}\n"
                     if len(data) > 5:
                         result += "...\n"
-            
+
+            workbook.close()
             return result
         
         return ""
