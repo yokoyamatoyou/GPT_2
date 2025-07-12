@@ -694,6 +694,7 @@ class ChatGPTClient:
                 break
 
         except Exception as e:
+            logging.exception("Streaming failed: %s", e)
             self.response_queue.put(f"\n\nエラー: {str(e)}\n")
 
     def simple_llm(self, prompt: str, *, stream: bool = False, prefix: str = "") -> str:
