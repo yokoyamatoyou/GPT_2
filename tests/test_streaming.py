@@ -135,3 +135,40 @@ def test_get_response_tool_calls(monkeypatch):
     assert client.messages[2]["content"] == "/tmp/x.png"
     assert client.messages[-1]["role"] == "assistant"
     assert client.messages[-1]["content"] == "done"
+
+
+def _run_response_with_text(text, monkeypatch):
+    client = _client()
+
+    def create(model, messages, temperature, stream=True):
+        return [
+            SimpleNamespace(
+                choices=[
+                    SimpleNamespace(delta=SimpleNamespace(content=text), finish_reason=None)
+                ]
+            ),
+            SimpleNamespace(
+                choices=[
+                    SimpleNamespace(delta=SimpleNamespace(content=None), finish_reason="stop")
+                ]
+            ),
+        ]
+
+    client.client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create)))
+    monkeypatch.setattr(GPT.os.path, "isfile", lambda p: True)
+    client.get_response()
+
+    items = []
+    while not client.response_queue.empty():
+        items.append(client.response_queue.get())
+    return items
+
+
+def test_diagram_preview_unix(monkeypatch):
+    out = _run_response_with_text("see /tmp/x.png", monkeypatch)
+    assert "__DIAGRAM__/tmp/x.png" in out
+
+
+def test_diagram_preview_windows(monkeypatch):
+    out = _run_response_with_text(r"see C:\tmp\x.png", monkeypatch)
+    assert "__DIAGRAM__C:\\tmp\\x.png" in out

@@ -682,9 +682,9 @@ class ChatGPTClient:
 
                 # 通常の応答を保存して終了
                 self.messages.append({"role": "assistant", "content": response_text})
-                match = re.search(r"(/[^\s]+\.png)", response_text)
-                if match and os.path.isfile(match.group(1)):
-                    self.response_queue.put(f"__DIAGRAM__{match.group(1)}")
+                match = re.search(r"(?:[A-Za-z]:)?[\\/][^\s]+\.png", response_text)
+                if match and os.path.isfile(match.group(0)):
+                    self.response_queue.put(f"__DIAGRAM__{match.group(0)}")
                 self.response_queue.put("__SAVE__")
                 break
 
@@ -763,9 +763,9 @@ class ChatGPTClient:
                 self.response_queue.put("__TOT_END__" + final_answer + "\n")
                 self.messages.append({"role": "user", "content": question})
                 self.messages.append({"role": "assistant", "content": final_answer})
-                match = re.search(r"(/[^\s]+\.png)", final_answer)
-                if match and os.path.isfile(match.group(1)):
-                    self.response_queue.put(f"__DIAGRAM__{match.group(1)}")
+                match = re.search(r"(?:[A-Za-z]:)?[\\/][^\s]+\.png", final_answer)
+                if match and os.path.isfile(match.group(0)):
+                    self.response_queue.put(f"__DIAGRAM__{match.group(0)}")
                 self.response_queue.put("__SAVE__")
             else:
                 response_text = ""
@@ -773,9 +773,9 @@ class ChatGPTClient:
                     response_text += step + "\n"
                 self.messages.append({"role": "user", "content": question})
                 self.messages.append({"role": "assistant", "content": response_text})
-                match = re.search(r"(/[^\s]+\.png)", response_text)
-                if match and os.path.isfile(match.group(1)):
-                    self.response_queue.put(f"__DIAGRAM__{match.group(1)}")
+                match = re.search(r"(?:[A-Za-z]:)?[\\/][^\s]+\.png", response_text)
+                if match and os.path.isfile(match.group(0)):
+                    self.response_queue.put(f"__DIAGRAM__{match.group(0)}")
                 self.response_queue.put("__SAVE__")
         except Exception as exc:
             self.response_queue.put(f"\n\nエラー: {exc}\n")
