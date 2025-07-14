@@ -93,7 +93,12 @@ class ChatGPTClient:
         """Initialize the main window and OpenAI client."""
         self.window = ctk.CTk()
         self.window.title("ChatGPT Desktop")
-        self.window.geometry("1200x800")
+
+        screen_width = self.window.winfo_screenwidth()
+        screen_height = self.window.winfo_screenheight()
+        init_width = min(int(screen_width * 0.9), 1200)
+        init_height = min(int(screen_height * 0.9), 800)
+        self.window.geometry(f"{init_width}x{init_height}")
         # Allow shrinking on smaller displays
         self.window.minsize(800, 600)
         try:
