@@ -203,7 +203,7 @@ class ChatGPTClient:
         info_tab = tabview.add("エージェント比較")
         
         # 左側パネル（設定）
-        left_panel = ctk.CTkFrame(
+        left_panel = ctk.CTkScrollableFrame(
             main_container,
             width=300,
             fg_color="#F1F3F4",
