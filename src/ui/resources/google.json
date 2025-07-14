@@ -135,6 +135,9 @@
     "hover_color": ["gray75", "gray28"],
     "text_color": ["#202124", "gray90"]
   },
+  "DiagramFrame": {
+    "fg_color": "#F8F9FA"
+  },
   "CTkFont": {
     "macOS": {
       "family": "SF Display",

@@ -85,6 +85,21 @@ ICON_PATH = os.path.join(os.path.dirname(__file__), "resources", "app_icon.xbm")
 
 FONT_FAMILY = get_font_family()
 
+# Custom frame that pulls its colors from the "DiagramFrame" theme entry.
+if hasattr(ctk, "CTkFrame"):
+    class DiagramFrame(ctk.CTkFrame):
+        def __init__(self, *args, **kwargs):
+            if kwargs.get("fg_color") is None and hasattr(ctk, "ThemeManager"):
+                theme = ctk.ThemeManager.theme.get("DiagramFrame", {})
+                color = theme.get("fg_color")
+                if color is not None:
+                    kwargs["fg_color"] = color
+            super().__init__(*args, **kwargs)
+else:
+    class DiagramFrame(object):  # type: ignore
+        def __init__(self, *args, **kwargs):
+            pass
+
 # Preset search parameters for the Tree-of-Thoughts agent are defined in
 # :mod:`src.constants` as ``TOT_LEVELS``.
 
@@ -308,10 +323,10 @@ class ChatGPTClient:
         save_chat_btn.pack(pady=10)
         
         # 右側パネル（図プレビュー）
-        self.diagram_panel = ctk.CTkFrame(
+        self.diagram_panel = DiagramFrame(
             main_container,
             width=250,
-            fg_color="#F8F9FA",
+            fg_color=None,
             corner_radius=8,
             border_width=0,
         )
