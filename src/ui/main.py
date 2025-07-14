@@ -523,6 +523,28 @@ class ChatGPTClient:
         for file in self.uploaded_files:
             self.file_list_text.insert("end", f"• {file['name']}\n")
         self.file_list_text.configure(state="disabled")
+
+    def adjust_width_for_message(self, msg: str) -> None:
+        """Expand the window if a long message is entered."""
+        if not hasattr(self, "window") or not hasattr(self, "chat_display"):
+            return
+        try:
+            char_len = len(msg)
+            font_desc = self.chat_display.cget("font")
+            import tkinter.font as tkfont
+            fnt = tkfont.Font(font=font_desc)
+            char_len = fnt.measure(msg)
+        except Exception:
+            pass
+
+        threshold = 1000
+        cur_width = self.window.winfo_width()
+        screen_width = self.window.winfo_screenwidth()
+        if char_len > threshold and cur_width < screen_width:
+            step = 150
+            new_width = min(cur_width + step, screen_width)
+            height = self.window.winfo_height()
+            self.window.geometry(f"{new_width}x{height}")
     
     def send_message(self):
         """Handle user input and start fetching a reply."""
@@ -551,6 +573,7 @@ class ChatGPTClient:
             self.chat_display.tag_add("user_msg", start, end)
         self.chat_display.see("end")
         self.chat_display.configure(state="disabled")
+        self.adjust_width_for_message(user_message)
         
         # ファイル情報を含めたメッセージを作成
         # OpenAI APIは、"user"ロールのメッセージcontentに直接画像を含めることを想定
