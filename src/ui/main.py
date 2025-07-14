@@ -238,12 +238,12 @@ class ChatGPTClient:
         model_menu.pack(pady=(0, 20))
         
         # 温度設定
-        temp_label = ctk.CTkLabel(left_panel, text="Temperature: 0.7",
+        temp_label = ctk.CTkLabel(left_panel, text="温度: 0.7",
                                  font=(FONT_FAMILY, 16))
         temp_label.pack(pady=(20, 5))
-        
+
         self.temp_slider = ctk.CTkSlider(left_panel, from_=0, to=2, number_of_steps=20,
-                                        command=lambda v: temp_label.configure(text=f"Temperature: {v:.1f}"))
+                                        command=lambda v: temp_label.configure(text=f"温度: {v:.1f}"))
         self.temp_slider.set(0.7)
         self.temp_slider.pack(pady=(0, 20))
 
