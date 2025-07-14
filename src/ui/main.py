@@ -220,12 +220,12 @@ class ChatGPTClient:
         # 左側パネル（設定）
         left_panel = ctk.CTkScrollableFrame(
             main_container,
-            width=300,
+            width=320,
             fg_color="#F1F3F4",
             corner_radius=8,
             border_width=0,
         )
-        left_panel.grid(row=0, column=0, sticky="ns", padx=(0, 10))
+        left_panel.grid(row=0, column=0, sticky="ns", padx=(0, 15))
         left_panel.grid_propagate(False)
         
         # 設定タイトル
@@ -325,12 +325,12 @@ class ChatGPTClient:
         # 右側パネル（図プレビュー）
         self.diagram_panel = DiagramFrame(
             main_container,
-            width=250,
+            width=270,
             fg_color=None,
             corner_radius=8,
             border_width=0,
         )
-        self.diagram_panel.grid(row=0, column=2, sticky="ns")
+        self.diagram_panel.grid(row=0, column=2, sticky="ns", padx=(15, 0))
         self.diagram_panel.grid_propagate(False)
 
         self.diagram_label = ctk.CTkLabel(self.diagram_panel, text="図のプレビュー", font=(FONT_FAMILY, 16))
