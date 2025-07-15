@@ -274,7 +274,7 @@ class ChatGPTClient:
         )
         agent_menu.pack(pady=(0, 20))
 
-        tot_label = ctk.CTkLabel(left_panel, text="ToT探索レベル",
+        tot_label = ctk.CTkLabel(left_panel, text="思考の木レベル",
                                    font=(FONT_FAMILY, 16))
         tot_label.pack(pady=(10, 5))
 
