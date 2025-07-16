@@ -261,6 +261,10 @@ for step in agent.run_iter("質問"):
     print(step)
 ```
 
+While the ToT agent runs in the GUI, intermediate thoughts are streamed as
+lines prefixed with `__TOT__`. These temporary messages are automatically
+replaced with the final answer once the `__TOT_END__` token arrives.
+
 This implementation is intentionally simple but shows how an LLM can be used in
 a branch-and-bound style search loop.
 
