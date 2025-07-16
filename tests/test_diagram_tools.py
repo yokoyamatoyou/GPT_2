@@ -4,7 +4,7 @@ from graphviz import Source
 from mermaid import Mermaid
 
 from src.tools.graphviz_tool import create_graphviz_diagram
-from src.tools.mermaid_tool import create_mermaid_diagram
+from src.tools.mermaid_tool import create_mermaid_diagram, sanitize_mermaid_code
 
 
 def test_create_graphviz_diagram_success(monkeypatch, tmp_path):
@@ -78,3 +78,24 @@ def test_create_mermaid_diagram_failure(monkeypatch, tmp_path):
     result = create_mermaid_diagram("graph TD;")
     assert result.startswith("Failed to generate diagram")
     assert not temp_path.exists()
+
+
+def test_sanitize_mermaid_code():
+    raw = "```mermaid\n<div>graph TD; A-->B;</div>\n```"
+    assert sanitize_mermaid_code(raw) == "graph TD; A-->B;"
+
+
+def test_create_mermaid_diagram_sanitizes(monkeypatch, tmp_path):
+    captured = {}
+
+    class Dummy:
+        def __init__(self, code):
+            captured["code"] = code
+
+        def to_png(self, filename):
+            open(filename, "wb").close()
+
+    monkeypatch.setattr("src.tools.mermaid_tool.Mermaid", Dummy)
+    path = create_mermaid_diagram("```mermaid\n<b>graph TD;A-->B;</b>\n```")
+    assert captured["code"] == "graph TD;A-->B;"
+    os.unlink(path)

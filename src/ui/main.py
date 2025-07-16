@@ -30,7 +30,7 @@ from src.tools import (
     get_mermaid_tool,
 )
 from src.tools.graphviz_tool import create_graphviz_diagram
-from src.tools.mermaid_tool import create_mermaid_diagram
+from src.tools.mermaid_tool import create_mermaid_diagram, sanitize_mermaid_code
 
 
 def get_font_family(preferred: str = "Meiryo") -> str:
@@ -157,6 +157,7 @@ class ChatGPTClient:
         self.assistant_start = None
         self.tot_start = None
         self._diagram_path: str | None = None
+        self._failed_mermaid_code: str | None = None
         self.agent_var = ctk.StringVar(value="chatgpt")
         self.tot_level_var = ctk.StringVar(value="LOW")
         self.agent_tools = [
@@ -362,6 +363,15 @@ class ChatGPTClient:
             state="disabled",
         )
         self.clear_button.pack(pady=(0, 10))
+
+        self.fix_button = ctk.CTkButton(
+            self.diagram_panel,
+            text="修正",
+            command=lambda: self.retry_diagram(),
+            font=(FONT_FAMILY, 14),
+            state="disabled",
+        )
+        self.fix_button.pack(pady=(0, 10))
 
         # 右側パネル（チャット）
         right_panel = ctk.CTkFrame(
@@ -719,6 +729,9 @@ class ChatGPTClient:
                         if func:
                             try:
                                 args = json.loads(d["args"] or "{}")
+                                if d["name"] == "create_mermaid_diagram":
+                                    code = args.get("code", "")
+                                    self._failed_mermaid_code = sanitize_mermaid_code(code)
                                 result = func(**args)
                             except Exception as exc:
                                 result = f"Tool execution failed: {exc}"
@@ -992,6 +1005,7 @@ class ChatGPTClient:
         self.save_button.configure(state="normal")
         self.clear_button.configure(state="normal")
         self.copy_button.configure(state="normal")
+        self.fix_button.configure(state="disabled")
         self._diagram_path = path
 
     def save_diagram(self) -> None:
@@ -1014,6 +1028,7 @@ class ChatGPTClient:
         self.save_button.configure(state="disabled")
         self.clear_button.configure(state="disabled")
         self.copy_button.configure(state="disabled")
+        self.fix_button.configure(state="disabled")
         self._diagram_path = None
 
     def copy_diagram(self) -> None:
@@ -1027,6 +1042,18 @@ class ChatGPTClient:
         except Exception as exc:
             messagebox.showerror("コピーエラー", str(exc))
 
+    def retry_diagram(self) -> None:
+        """Attempt to regenerate a Mermaid diagram after a failure."""
+        code = getattr(self, "_failed_mermaid_code", None)
+        if not code:
+            return
+        path = create_mermaid_diagram(code)
+        if path.startswith("Failed to generate diagram"):
+            messagebox.showerror("エラー", "図の生成に失敗しました")
+            return
+        self.display_diagram(path)
+        self.fix_button.configure(state="disabled")
+
     def process_queue(self):
         """キューからのメッセージをGUIに反映"""
         try:
@@ -1038,6 +1065,15 @@ class ChatGPTClient:
                     continue
                 if item.startswith("__DIAGRAM__"):
                     self.display_diagram(item[len("__DIAGRAM__"):])
+                    continue
+                if item.startswith("Failed to generate diagram:"):
+                    self.diagram_label.configure(image=None, text="図の生成に失敗しました")
+                    self.fix_button.configure(state="normal")
+                    self.clear_button.configure(state="normal")
+                    self.save_button.configure(state="disabled")
+                    self.copy_button.configure(state="disabled")
+                    self._diagram_path = None
+                    # self._failed_mermaid_code is already set during tool call
                     continue
                 if item == "__SAVE__":
                     threading.Thread(

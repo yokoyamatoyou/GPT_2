@@ -10,6 +10,7 @@ def _client():
     c.save_button = SimpleNamespace(configure=lambda **k: c.calls.setdefault('save', []).append(k))
     c.clear_button = SimpleNamespace(configure=lambda **k: c.calls.setdefault('clear', []).append(k))
     c.copy_button = SimpleNamespace(configure=lambda **k: c.calls.setdefault('copy', []).append(k))
+    c.fix_button = SimpleNamespace(configure=lambda **k: c.calls.setdefault('fix', []).append(k))
     c.calls = {}
     return c
 

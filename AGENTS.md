@@ -46,6 +46,7 @@ When modifying this project, keep the following behaviors in mind:
 23. ``get_font_family`` checks the ``PREFERRED_FONT`` environment variable. When set it overrides the default "Meiryo" preference before falling back to "Helvetica" if the font is unavailable.
 24. The Tree-of-Thoughts agent includes an ``EXTREME`` preset that sets depth and breadth to ``(5, 5)`` when ``TOT_LEVEL`` is ``EXTREME`` and explicit ``--depth``/``--breadth`` options are not provided.
 25. The main window now uses a grid-based layout so the chat area and sidebars resize with the window. The minimum size is 800x600.
+26. `create_mermaid_diagram` sanitizes input by removing ```mermaid fences and HTML tags. If generation fails the preview shows an error and a "修正" button lets the user retry.
 
 ---
 

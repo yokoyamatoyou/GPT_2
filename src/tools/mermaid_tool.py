@@ -1,12 +1,21 @@
 import os
 import tempfile
+import re
 from mermaid import Mermaid
 from pydantic import BaseModel, Field
 from .base import Tool
-import requests
 
 class MermaidInput(BaseModel):
     code: str = Field(description="Mermaid記法のコード")
+
+
+def sanitize_mermaid_code(code: str) -> str:
+    """Strip Markdown fences and HTML tags from Mermaid code."""
+    code = code.strip()
+    code = re.sub(r"^```(?:mermaid)?\n?", "", code, flags=re.IGNORECASE)
+    code = re.sub(r"```$", "", code.strip())
+    code = re.sub(r"<[^>]+>", "", code)
+    return code.strip()
 
 
 def create_mermaid_diagram(mermaid_code: str) -> str:
@@ -14,11 +23,9 @@ def create_mermaid_diagram(mermaid_code: str) -> str:
     out_file = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
     out_file.close()
     try:
-        diagram = Mermaid(mermaid_code)
+        code = sanitize_mermaid_code(mermaid_code)
+        diagram = Mermaid(code)
         diagram.to_png(out_file.name)
-    except requests.RequestException as exc:
-        os.unlink(out_file.name)
-        return f"Failed to fetch Mermaid diagram: {exc}"
     except Exception as exc:
         os.unlink(out_file.name)
         return f"Failed to generate diagram: {exc}"

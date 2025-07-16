@@ -34,6 +34,9 @@ def _client():
     c.copy_button = SimpleNamespace(
         configure=lambda **k: c.calls.setdefault("copy", []).append(k)
     )
+    c.fix_button = SimpleNamespace(
+        configure=lambda **k: c.calls.setdefault("fix", []).append(k)
+    )
     return c
 
 
@@ -53,3 +56,4 @@ def test_new_chat_resets_diagram_preview():
     assert any(k.get("state") == "disabled" for k in client.calls.get("save", []))
     assert any(k.get("state") == "disabled" for k in client.calls.get("clear", []))
     assert any(k.get("state") == "disabled" for k in client.calls.get("copy", []))
+    assert any(k.get("state") == "disabled" for k in client.calls.get("fix", []))
