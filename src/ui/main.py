@@ -227,7 +227,9 @@ class ChatGPTClient:
             border_width=0,
         )
         left_panel.grid(row=0, column=0, sticky="ns", padx=(0, 15))
-        left_panel.grid_propagate(False)
+        # CustomTkinter's CTkScrollableFrame uses grid layout; grid_propagate
+        # takes no arguments, so call it without parameters to disable resizing
+        left_panel.grid_propagate()
         
         # 設定タイトル
         settings_label = ctk.CTkLabel(left_panel, text="設定",
@@ -332,7 +334,8 @@ class ChatGPTClient:
             border_width=0,
         )
         self.diagram_panel.grid(row=0, column=2, sticky="ns", padx=(15, 0))
-        self.diagram_panel.grid_propagate(False)
+        # Disable geometry propagation so the frame keeps the set width
+        self.diagram_panel.grid_propagate()
 
         self.diagram_label = ctk.CTkLabel(self.diagram_panel, text="図のプレビュー", font=(FONT_FAMILY, 16))
         self.diagram_label.pack(padx=10, pady=10)
