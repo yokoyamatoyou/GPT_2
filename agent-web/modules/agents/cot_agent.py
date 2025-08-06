@@ -1,8 +1,9 @@
 import logging
 import re
-from typing import Callable, Iterator, Optional
+from typing import Iterator, Optional
 
-from src.memory import BaseMemory
+from ..memory.conversation_memory import BaseMemory
+from ..utils.llm_client import LLMClient
 
 logger = logging.getLogger(__name__)
 
@@ -24,13 +25,13 @@ class CoTAgent:
 
     def __init__(
         self,
-        llm: Callable[[str], str],
+        llm_client: LLMClient,
         memory: Optional[BaseMemory] = None,
         *,
         max_turns: int = 5,
         verbose: bool = False,
     ) -> None:
-        self.llm = llm
+        self.llm_client = llm_client
         self.memory = memory
         self.max_turns = max_turns
         self.verbose = verbose
@@ -54,9 +55,12 @@ class CoTAgent:
                 input=question,
                 agent_scratchpad=(history + "\n" + scratchpad if history else scratchpad),
             )
+            messages = [{"role": "user", "content": prompt}]
             if self.verbose:
                 logger.debug("Prompt:\n%s", prompt)
-            output = self.llm(prompt)
+
+            output = self.llm_client.chat(messages=messages, stream=False)
+
             if self.verbose:
                 logger.debug("LLM output:\n%s", output)
             yield output

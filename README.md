@@ -1,4 +1,55 @@
-# GPT_2
+# Agent Web (Streamlit)
+
+This project is being refactored into a modern web application using Streamlit. The new application can be found in the `agent-web` directory.
+
+## Getting Started (Streamlit App)
+
+Follow these steps to run the new Streamlit web application.
+
+### 1. Navigate to the app directory
+```bash
+cd agent-web
+```
+
+### 2. Create a virtual environment
+
+```bash
+python3 -m venv venv
+source venv/bin/activate  # On Windows use: .\\venv\\Scripts\\activate
+```
+
+### 3. Install dependencies
+
+Install all required Python packages from the new `requirements.txt`:
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Configure environment variables
+
+The Streamlit application uses a `.streamlit/secrets.toml` file for managing secrets.
+
+Copy the example file:
+```bash
+cp .streamlit/secrets.toml.example .streamlit/secrets.toml
+```
+Then, open `.streamlit/secrets.toml` and add your OpenAI API key:
+```toml
+# .streamlit/secrets.toml
+OPENAI_API_KEY = "sk-..."
+```
+
+### 5. Launch the application
+
+Run the Streamlit app:
+```bash
+streamlit run app.py
+```
+
+---
+
+# GPT_2 (Old Desktop App)
 
 This repository contains a simple desktop interface for ChatGPT built with [CustomTkinter](https://github.com/TomSchimansky/CustomTkinter). The `src/ui/main.py` script provides a GUI for interacting with OpenAI models and supports uploading files such as Word documents, PDFs, images and Excel spreadsheets.
 
@@ -6,7 +57,7 @@ See [agent_comparison.md](docs/agent_comparison.md) for an overview of the avail
 
 The GUI also includes a help tab labeled "エージェント比較" that explains CoT, ReAct and ToT in Japanese with short examples and prompt tips.
 
-## Getting Started
+## Getting Started (Old Desktop App)
 
 Follow the steps below to run the application locally.
 

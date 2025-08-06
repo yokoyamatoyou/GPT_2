@@ -1,7 +1,8 @@
 import re
-from typing import Callable, List, Tuple, Iterator, Optional
+from typing import List, Tuple, Iterator, Optional
 
-from src.memory import BaseMemory
+from ..memory.conversation_memory import BaseMemory
+from ..utils.llm_client import LLMClient
 
 
 class ToTAgent:
@@ -18,8 +19,7 @@ class ToTAgent:
 
     def __init__(
         self,
-        llm: Callable[[str], str],
-        evaluate: Callable[[str], float],
+        llm_client: LLMClient,
         *,
         max_depth: int = 2,
         breadth: int = 2,
@@ -29,20 +29,22 @@ class ToTAgent:
 
         Parameters
         ----------
-        llm:
-            Callable that takes a prompt and returns a completion.
-        evaluate:
-            Function scoring a history string, higher is better.
+        llm_client:
+            The client for interacting with the language model.
         max_depth:
             How many rounds of expansion to perform.
         breadth:
             How many candidates to keep at each depth.
         """
-        self.llm = llm
-        self.evaluate = evaluate
+        self.llm_client = llm_client
+        self.evaluate = self._dummy_evaluate
         self.max_depth = max_depth
         self.breadth = breadth
         self.memory = memory
+
+    def _dummy_evaluate(self, history: str) -> float:
+        """A placeholder evaluation function. TODO: Implement a real one."""
+        return 0.0
 
     def _propose(self, question: str, history: str, memory: str = "") -> List[str]:
         """Ask the LLM for the next thought candidates."""
@@ -52,7 +54,8 @@ class ToTAgent:
             + f"これまでの思考:\n{history}\n"
             f"{self.breadth}個の次の思考候補を箇条書きで提案してください。"
         )
-        output = self.llm(prompt)
+        messages = [{"role": "user", "content": prompt}]
+        output = self.llm_client.chat(messages=messages, stream=False)
         return [m.group(1).strip() for m in self.THOUGHT_RE.finditer(output)]
 
     def _final(self, question: str, history: str, memory: str = "") -> str:
@@ -62,7 +65,8 @@ class ToTAgent:
             + (f"関連履歴:\n{memory}\n" if memory else "")
             + f"思考過程:\n{history}\n最終的な答え:"
         )
-        resp = self.llm(prompt)
+        messages = [{"role": "user", "content": prompt}]
+        resp = self.llm_client.chat(messages=messages, stream=False)
         match = self.FINAL_RE.search(resp)
         return match.group(1).strip() if match else resp.strip()
 
