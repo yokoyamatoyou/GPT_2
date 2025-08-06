@@ -1,0 +1,68 @@
+/* Claudeライクなシンプルなデザイン */
+
+/* メインコンテナ */
+.main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* チャットメッセージ */
+.stChatMessage {
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+}
+
+/* ユーザーメッセージ */
+.stChatMessage[data-testid="user-message"] {
+    background: #f7f7f7;
+}
+
+/* アシスタントメッセージ */
+.stChatMessage[data-testid="assistant-message"] {
+    background: #ffffff;
+}
+
+/* 入力フィールド */
+.stChatInput > div {
+    border-radius: 8px;
+    border: 2px solid #e0e0e0;
+}
+
+.stChatInput > div:focus-within {
+    border-color: #4a5568;
+}
+
+/* サイドバー */
+.css-1d391kg {
+    background: #f9f9f9;
+    border-right: 1px solid #e0e0e0;
+}
+
+/* ボタン */
+.stButton > button {
+    background: #4a5568;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    transition: background 0.2s;
+}
+
+.stButton > button:hover {
+    background: #2d3748;
+}
+
+/* セレクトボックス */
+.stSelectbox > div > div {
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+}
+
+/* 絵文字を非表示 */
+.stChatMessage [data-testid="chatAvatarIcon"] {
+    display: none;
+}

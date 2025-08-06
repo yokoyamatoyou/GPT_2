@@ -1,10 +1,11 @@
 import re
 import logging
 import json
-from typing import Callable, Dict, List, Optional, Iterator
+from typing import Dict, List, Optional, Iterator
 
-from src.tools.base import Tool, execute_tool
-from src.memory import BaseMemory
+from ..tools.base import Tool, execute_tool
+from ..memory.conversation_memory import BaseMemory
+from ..utils.llm_client import LLMClient
 
 
 logger = logging.getLogger(__name__)
@@ -25,12 +26,12 @@ class ReActAgent:
 
     def __init__(
         self,
-        llm: Callable[[str], str],
+        llm_client: LLMClient,
         tools: List[Tool],
         memory: Optional[BaseMemory] = None,
         verbose: bool = False,
     ):
-        self.llm = llm
+        self.llm_client = llm_client
         self.tools = {t.name: t for t in tools}
         self.memory = memory
         self.verbose = verbose
@@ -64,9 +65,13 @@ class ReActAgent:
                 tools=self.tool_descriptions(),
                 agent_scratchpad=(history + "\n" + scratchpad if history else scratchpad),
             )
+            messages = [{"role": "user", "content": prompt}]
+
             if self.verbose:
                 logger.debug("Prompt:\n%s", prompt)
-            output = self.llm(prompt)
+
+            output = self.llm_client.chat(messages=messages, stream=False)
+
             if self.verbose:
                 logger.debug("LLM output:\n%s", output)
             yield output
